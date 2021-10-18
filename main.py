@@ -30,6 +30,6 @@ def read_root(player: PlayerOrder):
     return player
 
 
-@app.post("/game")
+@app.post("/games")
 def read_item(game: Game):
     return game
