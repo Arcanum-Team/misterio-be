@@ -1,4 +1,6 @@
 from enum import Enum
+from uuid import UUID
+
 from fastapi import FastAPI
 from pydantic import BaseModel
 
@@ -13,13 +15,14 @@ class Position(Enum):
 
 
 class PlayerOrder(BaseModel):
-    player_id: int
+    player_id: UUID
+    game_id: UUID
     order: Position
 
 
 class Game(BaseModel):
     name: str
-    owner: int
+    owner: UUID
 
 
 app = FastAPI()
