@@ -24,6 +24,10 @@ class Game(BaseModel):
     name: str
     owner: UUID
 
+class Game_join(BaseModel): #
+    name: str
+    user: UUID
+
 
 app = FastAPI()
 
@@ -35,4 +39,9 @@ def read_root(player: PlayerOrder):
 
 @app.post("/games")
 def read_item(game: Game):
+    return game
+
+
+@app.post("/games/join")
+def read_join(game: Game_join):
     return game
