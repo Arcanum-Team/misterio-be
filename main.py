@@ -4,7 +4,7 @@ from partida import entities
 from pony.orm import *
 from fastapi import FastAPI
 from pydantic import BaseModel
-
+from fastapi.middleware.cors import CORSMiddleware
 
 class Position(Enum):
     ONE = 1
@@ -23,7 +23,6 @@ class PlayerOrder(BaseModel):
 
 class Game(BaseModel):
     name: str
-    owner: int
     nickname: str
     playerName: str
 
@@ -34,13 +33,22 @@ class Game_join(BaseModel):
 
 
 app = FastAPI()
-
+origins = [
+    "http://localhost:8000/"
+]
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 @app.put("/players/order")
 def read_root(player: PlayerOrder):
     return player
 
-@app.post("/games")
+@app.post("/game")
 @db_session
 def read_item(game: Game):
     g_id= entities.addGame(game.name)
@@ -49,7 +57,7 @@ def read_item(game: Game):
     g[0].players.add(entities.getPlayerbyID(p_id))
     return game
 
-@app.post("/games/join")
+@app.post("/game/join")
 @db_session
 def read_game_join(game_join: Game_join):
     p_id= entities.addPlayer(game_join.user, game_join.nickname, game_join.name, False)
@@ -80,7 +88,7 @@ def read_games():
             "cantPlayers": len(game.players)}) 
     return res
 
-@app.put("/games/start/{gameName}/{host_id}")
+@app.put("/game/start/{gameName}/{host_id}")
 @db_session
 def startGame(gameName:str, host_id:int):
     entities.startGame(gameName,host_id)
