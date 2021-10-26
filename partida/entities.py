@@ -27,8 +27,9 @@ def getGamebyName(name):
 
 @db_session
 def addGame(name):
-    Game(name = name)
+    g = Game(name = name)
     commit()
+    return g.id
 
 @db_session
 def startGame(name, host_id):
@@ -43,9 +44,9 @@ def getPlayerbyID(id):
     return select(p for p in Player if p.id == id)[:]
 
 @db_session
-def addPlayer(name, nikcname, gameName):
+def addPlayer(name, nikcname, gameName, isHost=False):
     game = getGamebyName(gameName)[0]
-    p = Player(name = name, nikcname = nikcname, gameID = game.id)
+    p = Player(name = name, nikcname = nikcname, gameID = game.id, isHost=isHost)
     commit()
     return p.id
 
