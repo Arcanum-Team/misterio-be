@@ -23,7 +23,9 @@ class PlayerOrder(BaseModel):
 
 class Game(BaseModel):
     name: str
-    owner: UUID
+    owner: int
+    nickname: str
+    playerName: str
 
 
 app = FastAPI()
@@ -35,8 +37,14 @@ def read_root(player: PlayerOrder):
 
 
 @app.post("/games")
+@db_session
 def read_item(game: Game):
+    g_id= entities.addGame(game.name)
+    p_id= entities.addPlayer(game.playerName, game.nickname, game.name, True)
+    g= entities.getGamebyName(game.name)
+    g[0].players.add(entities.getPlayerbyID(p_id))
     return game
+
 
 @app.get("/game/{gameName}")
 @db_session
