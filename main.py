@@ -43,7 +43,7 @@ def read_item(game: Game):
 
 @app.post("/games/join")
 @db_session
-def read_item(game_join: Game_join):
+def read_game_join(game_join: Game_join):
    game = entities.getGamebyName(game_join.name)
    player= entities.getPlayerbyID(game_join.user)
    if(game):
