@@ -14,15 +14,12 @@ class Player(db.Entity):
     name = Required(str)
     nikcname = Required(str)
     gameID = Required(Game)
+    isHost= Required(bool)
 
 # Game querys
 @db_session
 def getGames():
     return select(g for g in Game)[:]
-
-@db_session
-def getGamebyName(name):
-    return select(g for g in Game if g.name == name)[:]
 
 @db_session
 def getGamebyName(name):

@@ -27,7 +27,7 @@ class Game(BaseModel):
 
 class Game_join(BaseModel): 
     name: str
-    user: UUID  #no se como pasar por la clase Game
+    user: int  #no se como pasar por la clase Game
 
 
 app = FastAPI()
@@ -40,6 +40,15 @@ def read_root(player: PlayerOrder):
 @app.post("/games")
 def read_item(game: Game):
     return game
+
+@app.post("/games/join")
+@db_session
+def read_item(game_join: Game_join):
+   game = entities.getGamebyName(game_join.name)
+   player= entities.getPlayerbyID(game_join.user)
+   if(game):
+       game[0].players.add(player[0])
+   return game 
 
 
 @app.get("/game/{gameName}")
