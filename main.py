@@ -85,7 +85,7 @@ def read_games():
     res = []
     for game in games:
         res.append({"id": game.id,"name": game.name,
-            "cantPlayers": len(game.players)}) 
+            "cantPlayers": len(game.players), "started": game.started}) 
     return res
 
 @app.put("/game/start/{gameName}/{host_id}")
