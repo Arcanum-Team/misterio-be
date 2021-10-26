@@ -25,6 +25,10 @@ def getGamebyName(name):
     return select(g for g in Game if g.name == name)[:]
 
 @db_session
+def getGamebyName(name):
+    return select(g for g in Game if g.name == name)[:]
+
+@db_session
 def addGame(name):
     Game(name = name)
     commit()
