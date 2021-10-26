@@ -41,10 +41,10 @@ def read_item(game: Game):
 @app.get("/game/{gameName}")
 @db_session
 def read_game(gameName: str):
-    res = {"message": "Game not found"}
+    res = {""}
     game = entities.getGamebyName(gameName)
     if(game):
-        res =  {"id": game[0].ID,"name": game[0].name,
+        res =  {"id": game[0].id,"name": game[0].name,
                 "cantPlayers": len(game[0].players)}
     return res
 
@@ -54,6 +54,12 @@ def read_games():
     games = entities.getGames()
     res = []
     for game in games:
-        res.append({"id": game.ID,"name": game.name,
+        res.append({"id": game.id,"name": game.name,
             "cantPlayers": len(game.players)}) 
     return res
+
+@app.put("/games/start/{gameName}/{host_id}")
+@db_session
+def startGame(gameName:str, host_id:int):
+    entities.startGame(gameName,host_id)
+    return {"message: Partida empezada"}
