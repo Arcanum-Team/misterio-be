@@ -1,2 +1,3 @@
 from .base import db
-from . import players_model, games_model
+from .players_model import Player
+from .games_model import Game

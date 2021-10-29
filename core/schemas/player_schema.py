@@ -18,3 +18,21 @@ class PlayerOrder(BaseModel):
     game_id: UUID
     order: Position
 
+
+class GameInDB(BaseModel):
+    id: UUID
+    name: str
+    started: bool
+
+    class Config:
+        orm_mode = True
+
+
+class PlayerOutput(BaseModel):
+    id: UUID
+    nickname: str
+    is_host: bool
+    game: GameInDB
+
+    class Config:
+        orm_mode = True

@@ -1,1 +1,2 @@
-from . import games_schema, player_schema
+from .games_schema import GameOutput, NewGame, GameJoin
+from .player_schema import PlayerOutput

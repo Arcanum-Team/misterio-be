@@ -1,9 +1,12 @@
-from pony.orm import Required, Set
+import uuid
+
+from pony.orm import Required, Set, PrimaryKey
 
 from . import db
 
 
 class Game(db.Entity):
-    name = Required(str)
+    id = PrimaryKey(uuid.UUID, default=uuid.uuid4)
+    name = Required(str, max_len=20, unique=True)
     started = Required(bool, default=False)
-    players = Set(lambda: db.Player)
+    players = Set('Player')
