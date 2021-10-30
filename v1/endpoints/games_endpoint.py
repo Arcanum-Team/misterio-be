@@ -1,6 +1,7 @@
 import logging
 import random
 import string
+from typing import List
 from uuid import UUID
 
 from fastapi import APIRouter
@@ -41,7 +42,7 @@ def join_to_game(game_join: GameJoin):
         raise MysteryException(message="Game not found!", status_code=404)
 
 
-@games_router.get("/{id}")
+@games_router.get("/{id}", response_model=GameOutput)
 def find_game_by_id(id: UUID):
     return find_complete_game(id)
 
@@ -51,7 +52,7 @@ def find_complete_game(id):
     return GameOutput.from_orm(games_repository.find_game_by_id(id))
 
 
-@games_router.get("/")
+@games_router.get("/", response_model=List[GameBasicInfo])
 def get_all_available_games():
 
     return [GameBasicInfo(name=row[0], player_count=row[1], started=row[2]) for row in get_games()]

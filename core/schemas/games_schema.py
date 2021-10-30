@@ -26,7 +26,7 @@ class PlayerInDB(BaseModel):
 
 class GameBasicInfo(BaseModel):
     name: str
-    player_count: int
+    player_count: Optional[int]
     started: bool
 
     class Config:
