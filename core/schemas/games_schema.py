@@ -6,8 +6,13 @@ from pydantic.main import BaseModel
 
 
 class GameJoin(BaseModel):
-    game_id: UUID
+    game_name: str = Field(min_length=1, max_length=6)
     nickname: str = Field(min_length=1, max_length=20)
+
+
+class GameStart(BaseModel):
+    game_id: UUID
+    player_id: UUID
 
 
 class NewGame(BaseModel):
@@ -16,8 +21,9 @@ class NewGame(BaseModel):
 
 
 class PlayerInDB(BaseModel):
+    id: Optional[UUID]
     nickname: str
-    is_host: bool
+    host: bool
     order: Optional[int]
 
     class Config:

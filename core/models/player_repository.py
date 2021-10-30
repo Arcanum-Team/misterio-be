@@ -1,8 +1,8 @@
-from pony.orm import db_session, select
+from pony.orm import db_session
 
 from core.models.players_model import Player
 
 
 @db_session
-def get_player_by_id():
-    return select(p for p in Player if p.id == id)[:]
+def find_player_by_id(uuid):
+    return Player[uuid]
