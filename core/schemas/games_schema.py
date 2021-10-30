@@ -16,7 +16,6 @@ class NewGame(BaseModel):
 
 
 class PlayerInDB(BaseModel):
-    id: UUID
     nickname: str
     is_host: bool
     order: Optional[int]
@@ -25,10 +24,17 @@ class PlayerInDB(BaseModel):
         orm_mode = True
 
 
-class GameOutput(BaseModel):
-    id: UUID
+class GameBasicInfo(BaseModel):
     name: str
+    player_count: int
     started: bool
+
+    class Config:
+        orm_mode = True
+
+
+class GameOutput(GameBasicInfo):
+    id: UUID
     players: List[PlayerInDB]
 
     @validator('players', pre=True, allow_reuse=True)
