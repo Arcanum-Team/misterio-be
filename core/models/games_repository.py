@@ -1,7 +1,6 @@
 import random
 
-from pony.orm import db_session, select, commit, IntegrityError, ObjectNotFound
-
+from pony.orm import db_session, select, ObjectNotFound
 from core import logger
 from core.exceptions import MysteryException
 from core.models.games_model import Game

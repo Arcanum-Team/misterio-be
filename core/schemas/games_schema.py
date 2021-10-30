@@ -1,7 +1,7 @@
 from typing import Optional, List
 from uuid import UUID
 
-from pydantic import validator, Required, Field
+from pydantic import validator, Field
 from pydantic.main import BaseModel
 
 
