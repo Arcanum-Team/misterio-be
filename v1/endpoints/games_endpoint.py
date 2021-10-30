@@ -16,6 +16,7 @@ games_router = APIRouter()
 
 @games_router.post("/", response_model=PlayerOutput)
 def create_game(game: NewGame):
+    logger.info(game)
     try:
         if not game.game_name:
             game.game_name = id_generator()
