@@ -31,7 +31,7 @@ class GameInDB(BaseModel):
 class PlayerOutput(BaseModel):
     id: UUID
     nickname: str
-    is_host: bool
+    host: bool
     game: GameInDB
 
     class Config:
