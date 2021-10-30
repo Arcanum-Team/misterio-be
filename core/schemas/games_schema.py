@@ -1,0 +1,39 @@
+from typing import Optional, List
+from uuid import UUID
+
+from pydantic import validator, Required, Field
+from pydantic.main import BaseModel
+
+
+class GameJoin(BaseModel):
+    game_id: UUID
+    nickname: str = Field(min_length=1, max_length=20)
+
+
+class NewGame(BaseModel):
+    game_name: Optional[str] = Field(min_length=1, max_length=6)
+    nickname: str = Field(min_length=1, max_length=20)
+
+
+class PlayerInDB(BaseModel):
+    id: UUID
+    nickname: str
+    is_host: bool
+    order: Optional[int]
+
+    class Config:
+        orm_mode = True
+
+
+class GameOutput(BaseModel):
+    id: UUID
+    name: str
+    started: bool
+    players: List[PlayerInDB]
+
+    @validator('players', pre=True, allow_reuse=True)
+    def players_to_players_in_db(cls, values):
+        return [v for v in values]
+
+    class Config:
+        orm_mode = True
