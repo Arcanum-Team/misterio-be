@@ -7,7 +7,7 @@ from core.models.games_model import Game
 from core.models.player_repository import find_player_by_id
 from core.models.players_model import Player
 from core.schemas import PlayerOutput, GameOutput
-
+from core.schemas.player_schema import Position
 
 @db_session
 def get_games():
@@ -99,3 +99,17 @@ def start_game(game):
         raise MysteryException(message="Game needs more join players!", status_code=400)
 
     return start_game_and_set_player_order(game.game_id)
+
+@db_session
+def pass_turn(game_id):
+    game = find_game_by_id(game_id)
+    t = 1
+    if(not game.started):
+        raise MysteryException(message="Game isnt started yet!", status_code=400)
+
+    if(game.turn != len(game.players)):
+        t = game.turn+ 1
+    game.turn = Position(t).value
+    return GameOutput.from_orm(game)
+
+

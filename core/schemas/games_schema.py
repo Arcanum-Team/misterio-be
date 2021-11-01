@@ -14,6 +14,8 @@ class GameStart(BaseModel):
     game_id: UUID
     player_id: UUID
 
+class GamePassTurn(BaseModel):
+    game_id: UUID
 
 class NewGame(BaseModel):
     game_name: Optional[str] = Field(min_length=1, max_length=6)
@@ -42,7 +44,8 @@ class GameBasicInfo(BaseModel):
 class GameOutput(GameBasicInfo):
     id: UUID
     players: List[PlayerInDB]
-
+    turn: int
+    
     @validator('players', pre=True, allow_reuse=True)
     def players_to_players_in_db(cls, values):
         return [v for v in values]
