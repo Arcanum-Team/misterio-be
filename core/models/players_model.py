@@ -1,10 +1,10 @@
 import uuid
 
-from pony.orm import Required, PrimaryKey, Optional
+from pony.orm import Required, PrimaryKey, Optional, Set
 
 from . import db
 from .games_model import Game
-
+from .card_model import Card
 
 class Player(db.Entity):
     id = PrimaryKey(uuid.UUID, default=uuid.uuid4)
@@ -12,3 +12,4 @@ class Player(db.Entity):
     game = Required(Game)
     host = Required(bool, default=False)
     order = Optional(int)
+    cards = Set('Card')
