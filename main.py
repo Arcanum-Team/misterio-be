@@ -1,38 +1,50 @@
-from enum import Enum
-from uuid import UUID
+from logging.config import dictConfig
 
-from fastapi import FastAPI
+from fastapi import Request
+from fastapi.encoders import jsonable_encoder
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel
+from starlette.middleware.cors import CORSMiddleware
 
+from core.exceptions import MysteryException
+from core.models import db
+from pony.orm import *
+from fastapi import FastAPI
 
-class Position(Enum):
-    ONE = 1
-    TWO = 2
-    THREE = 3
-    FOUR = 4
-    FIVE = 5
-    SIX = 6
-
-
-class PlayerOrder(BaseModel):
-    player_id: UUID
-    game_id: UUID
-    order: Position
-
-
-class Game(BaseModel):
-    name: str
-    owner: UUID
-
+from core.settings import settings, LogConfig
+from v1.api import api_router
 
 app = FastAPI()
 
+db.bind(settings.DB_PROVIDER, 'example.sqlite', create_db=True)  # Conectamos el objeto `db` con la base de datos.
+db.generate_mapping(create_tables=True)  # Generamos las base de datos.
+set_sql_debug(True)
 
-@app.put("/players/order")
-def read_root(player: PlayerOrder):
-    return player
+app.include_router(api_router, prefix=settings.API_V1_STR)
 
 
-@app.post("/games")
-def read_item(game: Game):
-    return game
+class ErrorContent(BaseModel):
+    message: str
+    path: str
+
+
+@app.exception_handler(MysteryException)
+async def unicorn_exception_handler(request: Request, exc: MysteryException):
+
+    content = ErrorContent(message=exc.message, path=request.url.path)
+    return JSONResponse(
+        status_code=exc.status_code,
+        content=jsonable_encoder(content)
+    )
+
+origins = [
+    "http://localhost:3000",
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)

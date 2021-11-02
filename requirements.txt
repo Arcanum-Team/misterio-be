@@ -1,3 +1,6 @@
 #python3 -m venv venv
 #source venv/bin/activate
 pony==0.7.14
+fastapi==0.70.0
+"uvicorn[standard]"  #0.15.0
+pydantic~=1.8.2
