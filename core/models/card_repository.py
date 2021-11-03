@@ -32,14 +32,13 @@ def get_cards():
 @db_session
 def get_cards_by_player_id(id_player):
     player_by_id= find_player_by_id(id_player)
-    if player_by_id.cards:
-        return select((c.id, c.name, c.type) for c in player_by_id.cards)[:]
-    return "this player does't have any card assigned yet"
+    if (not player_by_id.cards):
+            raise MysteryException(message="This player doesn't have any cards assigned yet!", status_code=400)
+    return player_by_id.cards
 
 @db_session
-def get_cards_by_game_id(id_game):
-    game_by_id= find_game_by_id(id_game)
-    if game_by_id:
-        players_id= select(p.id for p in game_by_id.players)[:]
-        return [get_cards_by_player_id(id_player) for id_player in players_id]
-    return "this game does't exist yet"
+def get_card_info_by_id(card_id):
+    return select((c.id, c.name, c.type) for c in Card
+        if c.id==card_id)[:]
+
+
