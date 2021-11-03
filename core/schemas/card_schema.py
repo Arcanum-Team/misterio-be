@@ -1,11 +1,9 @@
 from typing import List
-import uuid
 from pydantic import validator, Field
 from pydantic.main import BaseModel
-from uuid import UUID
 
 class CardBasicInfo(BaseModel):
-    id: UUID
+    id: int
     name: str
     type: str
 
