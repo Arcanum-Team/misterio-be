@@ -33,7 +33,6 @@ def id_generator(size=6, chars=string.ascii_uppercase + string.digits):
 
 @games_router.put("/join", response_model=PlayerOutput)
 def join_to_game(game_join: GameJoin):
-    logger.info(game_join)
     try:
         return PlayerOutput.from_orm(join_player_to_game(game_join))
     except ObjectNotFound:

@@ -18,12 +18,12 @@ cards = [ #monsters
          ["COCHERA", "ENCLOSURE"], ["ALCOBA", "ENCLOSURE"] ,["BIBLIOTECA", "ENCLOSURE"],
          ["VESTIBULO", "ENCLOSURE"], ["PANTEON", "ENCLOSURE"], ["BODEGA", "ENCLOSURE"],
          ["SALON", "ENCLOSURE"], ["LABORATORIO", "ENCLOSURE"]
-         ]
+        ]
 
 @db_session
 def initializeCards():
-    for c in cards:
-        Card(name=c[0] , type=c[1])
+    for i in range(len(cards)):
+        Card(id=i, name=cards[i][0] , type=cards[i][1])
 
 @db_session
 def get_cards():
