@@ -8,7 +8,6 @@ from core.models.card_model import Card
 from core.models.games_model import Game
 from core.settings import logger
 from core.models.player_repository import find_player_by_id
-#from core.models.games_repository import find_game_by_name
 from core.models.card_model import Mistery
 
 
