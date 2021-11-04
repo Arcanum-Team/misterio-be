@@ -5,10 +5,12 @@ from core import logger
 from core.exceptions import MysteryException
 
 from core.models.card_model import Card
+from core.models.games_model import Game
 from core.settings import logger
 from core.models.player_repository import find_player_by_id
-from core.models.games_repository import find_game_by_id
+#from core.models.games_repository import find_game_by_name
 from core.models.card_model import Mistery
+
 
 cards = [ #monsters
          ["DRACULA", "MONSTER"],["FRANKENSTEIN", "MONSTER"],["HOMBRE_LOBO", "MONSTER"], 
@@ -34,7 +36,6 @@ def get_cards():
 
 @db_session
 def cards_assignment(game_id):
-   #cards=get_cards()
    cards_id_list=list(range(21))
    random_mistery_monster=random.randint(0, 5)
    random_mistery_victim=random.randint(6, 11)
@@ -44,13 +45,16 @@ def cards_assignment(game_id):
    cards_id_list.remove(random_mistery_victim)
    cards_id_list.remove(random_mistery_enclosure)
    
-   g: Game = find_game_by_id(game_id)
-   cards_by_player=18/len(g.players)
+   g= Game[game_id]
+   cards_by_player=int(18/len(g.players))
    for i in g.players:
-       for j in 
-   
-   player_by_id=find_player_by_id()
-
+       for j in range(cards_by_player):
+           random_card=random.choice(cards_id_list)
+           if (random_card==20):
+               i.witch= True
+           else:
+               i.cards.append(random_card)
+           cards_id_list.remove(random_card)
 
 
 @db_session
