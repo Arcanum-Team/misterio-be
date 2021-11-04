@@ -13,3 +13,4 @@ class Player(db.Entity):
     host = Required(bool, default=False)
     order = Optional(int)
     cards = Required(IntArray, default=[])
+    witch= Optional(bool, default=False)
