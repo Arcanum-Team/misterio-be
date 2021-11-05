@@ -40,6 +40,9 @@ def find_game_by_name(name):
 def join_player_to_game(game_join):
     g: Game = find_game_by_name(game_join.game_name)
 
+    if g is None:
+        raise MysteryException(message="Game Not found!", status_code=404)
+
     if g.started:
         raise MysteryException(message="Game has already been started", status_code=400)
 

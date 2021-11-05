@@ -1,6 +1,5 @@
-from typing import List
-from pydantic import validator, Field
 from pydantic.main import BaseModel
+
 
 class CardBasicInfo(BaseModel):
     id: int
@@ -9,5 +8,3 @@ class CardBasicInfo(BaseModel):
 
     class Config:
         orm_mode = True
-
-
