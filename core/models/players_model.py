@@ -1,9 +1,8 @@
 import uuid
 
-from pony.orm import Required, PrimaryKey, Optional, Set, IntArray
+from pony.orm import Required, PrimaryKey, Optional, Set
 
-from . import db
-from .games_model import Game
+from core.models import db, Game
 
 
 class Player(db.Entity):
@@ -12,5 +11,7 @@ class Player(db.Entity):
     game = Required(Game)
     host = Required(bool, default=False)
     order = Optional(int)
-    cards = Required(IntArray, default=[])
-    witch= Optional(bool, default=False)
+    cards = Set('Card')
+    color = Optional(str)
+    current_position = Optional('Box')
+    witch = Optional(bool, default=False)

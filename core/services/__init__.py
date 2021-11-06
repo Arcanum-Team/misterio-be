@@ -1,0 +1,1 @@
+from .board_service import find_possible_movements

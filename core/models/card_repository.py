@@ -20,7 +20,7 @@ cards = [  # monsters
 
 
 @db_session
-def initializeCards():
+def initialize_cards():
     for i in range(len(cards)):
         Card(id=i, name=cards[i][0], type=cards[i][1])
 

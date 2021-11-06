@@ -10,6 +10,7 @@ from core.schemas import PlayerOutput, GameOutput
 from core.schemas.player_schema import Position
 from core.models.card_repository import cards_assignment
 
+
 @db_session
 def get_games():
     return select((g.name, len(g.players), g.started) for g in Game if not g.started)[:]
