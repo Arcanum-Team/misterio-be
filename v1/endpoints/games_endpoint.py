@@ -8,7 +8,7 @@ from pony.orm import TransactionIntegrityError, ObjectNotFound
 
 from core import logger
 from core.exceptions import MysteryException
-from core.models import join_player_to_game, get_games, new_game, start_game, find_complete_game , pass_turn
+from core.models import join_player_to_game, get_games, new_game, start_game, find_complete_game, pass_turn
 from core.schemas import NewGame, PlayerOutput, GameJoin, GameOutput, GamePassTurn
 from core.schemas.games_schema import GameBasicInfo, GameStart
 
@@ -33,11 +33,8 @@ def id_generator(size=6, chars=string.ascii_uppercase + string.digits):
 
 @games_router.put("/join", response_model=PlayerOutput)
 def join_to_game(game_join: GameJoin):
-    try:
-        return PlayerOutput.from_orm(join_player_to_game(game_join))
-    except ObjectNotFound:
-        logger.error("Game not found [{}]".format(game_join.game_name))
-        raise MysteryException(message="Game not found!", status_code=404)
+    logger.info(game_join)
+    return PlayerOutput.from_orm(join_player_to_game(game_join))
 
 
 @games_router.get("/{id}", response_model=GameOutput)
@@ -71,12 +68,11 @@ def start_created_game(game: GameStart):
     game_started.players.sort(key=lambda player: player.order)
     return game_started
 
+
 @games_router.put("/pass_turn", response_model=GameOutput)
 def pass_game_turn(game: GamePassTurn):
     try:
-        id = game.game_id
-        gameOutput = pass_turn(game.game_id)
-        return gameOutput
+        return pass_turn(game.game_id)
     except ObjectNotFound:
-        logger.error("Game not found [{}]".format(id))
+        logger.error("Game not found [%s]", game.game_id)
         raise MysteryException(message="Game not found!", status_code=404)

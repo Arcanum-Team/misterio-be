@@ -36,3 +36,8 @@ class PlayerOutput(BaseModel):
 
     class Config:
         orm_mode = True
+
+
+class BasicPlayerInfo(BaseModel):
+    id: UUID
+    nickname: str
