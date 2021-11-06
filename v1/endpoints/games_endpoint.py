@@ -8,7 +8,7 @@ from pony.orm import TransactionIntegrityError, ObjectNotFound
 
 from core import logger
 from core.exceptions import MysteryException
-from core.models import join_player_to_game, get_games, new_game, start_game, find_complete_game, pass_turn
+from core.repositories import join_player_to_game, get_games, new_game, start_game, find_complete_game, pass_turn
 from core.schemas import NewGame, PlayerOutput, GameJoin, GameOutput, GamePassTurn
 from core.schemas.games_schema import GameBasicInfo, GameStart
 
