@@ -3,6 +3,7 @@ from core.settings import logger
 from typing import List
 from fastapi import APIRouter
 from core.schemas.card_schema import CardBasicInfo
+from core.exceptions import MysteryException
 from core.models.card_repository import get_card_info_by_id, get_cards, initializeCards
 from core.models.card_repository import get_cards_by_player_id
 from uuid import UUID
