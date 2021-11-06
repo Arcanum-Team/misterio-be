@@ -1,8 +1,6 @@
 from typing import Optional, List
-from uuid import UUID
-
-from pydantic import validator, Field
 from pydantic.main import BaseModel
+
 
 class BoxOutput(BaseModel):
     position: int
@@ -15,4 +13,4 @@ class BoxOutput(BaseModel):
 
 class RowOutput(BaseModel):
     position: int
-    boxes:List[BoxOutput]
+    boxes: List[BoxOutput]

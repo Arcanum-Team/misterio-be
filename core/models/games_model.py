@@ -1,6 +1,6 @@
 import uuid
 from pony.orm import Required, Set, PrimaryKey, IntArray
-from . import db
+from core.models import db
 
 
 class Game(db.Entity):

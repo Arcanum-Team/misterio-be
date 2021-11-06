@@ -1,12 +1,10 @@
 import random
 from core.models.games_model import Game
 from core.models.card_model import Mistery
-
 from pony.orm import db_session, select
 from core.exceptions import MysteryException
-
 from core.models.card_model import Card
-from core.models.player_repository import find_player_by_id
+from core.repositories.player_repository import find_player_by_id
 
 cards = [  # monsters
     ["DRACULA", "MONSTER"], ["FRANKENSTEIN", "MONSTER"], ["HOMBRE LOBO", "MONSTER"],
@@ -22,7 +20,7 @@ cards = [  # monsters
 
 
 @db_session
-def initializeCards():
+def initialize_cards():
     for i in range(len(cards)):
         Card(id=i, name=cards[i][0], type=cards[i][1])
 
