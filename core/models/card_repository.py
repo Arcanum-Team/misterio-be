@@ -12,10 +12,10 @@ from core.models.card_model import Mistery
 
 
 cards = [ #monsters
-         ["DRACULA", "MONSTER"],["FRANKENSTEIN", "MONSTER"],["HOMBRE_LOBO", "MONSTER"], 
-         ["FANTASMA", "MONSTER"], ["MOMIA", "MONSTER"], ["DR.JEKYLL_MR.HYDE", "MONSTER"],
+         ["DRACULA", "MONSTER"],["FRANKENSTEIN", "MONSTER"],["HOMBRE LOBO", "MONSTER"], 
+         ["FANTASMA", "MONSTER"], ["MOMIA", "MONSTER"], ["DR.JEKYLL MR.HYDE", "MONSTER"],
           #victims
-         ["CONDE","VICTIM"], ["CONDESA","VICTIM"], ["AMA_DE_LLAVES","VICTIM"], 
+         ["CONDE","VICTIM"], ["CONDESA","VICTIM"], ["AMA DE LLAVES","VICTIM"], 
          ["MOYORDOMO","VICTIM"], ["DONCELLA","VICTIM"], ["JARDINERO", "VICTIM"],
           #enclosures
          ["COCHERA", "ENCLOSURE"], ["ALCOBA", "ENCLOSURE"] ,["BIBLIOTECA", "ENCLOSURE"],
