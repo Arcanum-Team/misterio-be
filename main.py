@@ -49,4 +49,3 @@ app.add_middleware(
 )
 
 app.add_middleware(GamesEventMiddleware)
-
