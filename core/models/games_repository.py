@@ -8,6 +8,7 @@ from core.models.player_repository import find_player_by_id
 from core.models.players_model import Player
 from core.schemas import PlayerOutput, GameOutput
 from core.schemas.player_schema import Position
+from core.models.card_repository import cards_assignment
 
 @db_session
 def get_games():
@@ -63,6 +64,7 @@ def start_game_and_set_player_order(game_id):
 
     game_output = GameOutput.from_orm(game)
     game_output.player_count = player_count
+    cards_assignment(game_id)
     return game_output
 
 
@@ -99,6 +101,7 @@ def start_game(game):
         raise MysteryException(message="Game needs more join players!", status_code=400)
 
     return start_game_and_set_player_order(game.game_id)
+
 
 @db_session
 def pass_turn(game_id):
