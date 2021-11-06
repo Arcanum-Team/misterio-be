@@ -4,7 +4,6 @@ from pony.orm import db_session, select, ObjectNotFound
 from core import logger
 from core.exceptions import MysteryException
 from core.models.games_model import Game
-from core.repositories import cards_assignment
 from core.repositories.player_repository import find_player_by_id
 from core.models.players_model import Player
 from core.schemas import PlayerOutput, GameOutput
