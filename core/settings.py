@@ -1,12 +1,11 @@
 import logging
 from logging.config import dictConfig
 
-from pydantic import BaseSettings, BaseModel, validator
-from typing import Optional, Union, List
+from pydantic import BaseSettings, BaseModel
+from typing import Optional
 
 
 class Settings(BaseSettings):
-
     API_V1_STR: str = "/api/v1"
 
     DB_PROVIDER: str = "sqlite"
@@ -51,5 +50,3 @@ class LogConfig(BaseModel):
 dictConfig(LogConfig().dict())
 
 logger = logging.getLogger("mystery_log")
-
-

@@ -3,8 +3,8 @@ from fastapi import APIRouter
 from core.repositories import get_board
 from core.schemas.board_schema import RowOutput
 
-
 board_router = APIRouter()
+
 
 @board_router.get("/")
 def get_complete_board(response_model=List[RowOutput]):
@@ -16,6 +16,5 @@ def get_complete_board(response_model=List[RowOutput]):
     #     raise MysteryException(message="Game not found!", status_code=404)
     # if not g.started:
     #     raise MysteryException(message="Game isnt started", status_code=400)
-    
-    return get_board()
 
+    return get_board()
