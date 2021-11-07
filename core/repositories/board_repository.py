@@ -1,3 +1,5 @@
+from typing import List, Dict
+
 from pony.orm import db_session, select
 from core.settings import logger
 from core.models.board_model import *
@@ -63,28 +65,60 @@ def create_board():
 
 
 @db_session
-def get_board():
-    a = select(c for c in Box)[:]
-    if (not a):
-        a = create_board()
-    boxes = []
-    for c in a:
-        if not c.enclosure_id:
-            box = BoxOutput(position=c.id, row=c.row, attribute=c.attribute,
-                            arrow=c.arrow, row_id=c.row_id)
-        else:
-            box = BoxOutput(position=c.id, row=c.row, attribute=c.attribute,
-                            enclosure_id=c.enclosure_id.id, arrow=c.arrow, row_id=c.row_id)
-        boxes.append(box)
-    rows = []
-    for i in range(1, 5):
-        bs = filter(lambda b: b.row == i, boxes)
-        rows.append(RowOutput(position=i, boxes=list(bs)))
+def get_complete_board():
+    return Box.select()
 
-    enclosuresRes = []
-    enclosures = select(e for e in Enclosure)[:]
-    for r in enclosures:
-        ds = filter(lambda d: d.enclosure_id == r.id, boxes)
-        enclosuresRes.append(EnclosureOutput(id=r.id, name=r.name, doors=list(ds)))
-    res = BoardOutput(rows=rows, enclosures=enclosuresRes)
-    return res
+
+@db_session
+def get_box_by_id(id: int):
+    return Box[id]
+
+
+@db_session
+def get_enclosure_by_id(id: int):
+    return Enclosure[id]
+
+
+@db_session
+def get_box_type_by_id(id: int):
+    return BoxType[id]
+
+
+@db_session
+def get_adjacent_boxes(id: int):
+    box: Box = get_box_by_id(id)
+    result: List[int] = list()
+    for adj in box.adjacent_boxes:
+        result.append(adj.adj_box_id)
+    return result
+
+
+@db_session
+def get_complete_row(row_id: int):
+    result: Set(Box) = Box.select(row=row_id).sort_by(Box.id)
+    output: List[BoxOutput] = list()
+    position: int = 1
+    for b in result:
+        box_output: BoxOutput = BoxOutput(id=b.id, position=position, row=b.row, attribute=b.type.value)
+        if b.enclosure:
+            exits: List[BoxOutput] = list()
+            for d in b.enclosure.doors:
+                exits.append(BoxOutput(id=d.id, row=d.row, attribute=d.type.value))
+            enclosure_output: EnclosureOutput = EnclosureOutput(id=b.enclosure.id, name=b.enclosure.value)
+            enclosure_output.doors = exits
+            box_output.enclosure = enclosure_output
+
+        if b.related_box:
+            box_output.id = b.related_box
+        output.append(box_output)
+        position = position + 1
+    output.sort(key=lambda row: row.position)
+    return output
+
+
+def get_board():
+    result: List[RowOutput] = list()
+    for i in range(1, 5):
+        result.append(RowOutput(id=i, boxes=get_complete_row(i)))
+
+    return result

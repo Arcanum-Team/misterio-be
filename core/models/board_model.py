@@ -4,7 +4,7 @@ from core.models import db
 
 class Enclosure(db.Entity):
     id = PrimaryKey(int)
-    name = Required(str)
+    value = Required(str)
     doors = Set('Box')
 
 
@@ -14,10 +14,17 @@ class BoxType(db.Entity):
     boxes = Set('Box')
 
 
+class BoxAdjacent(db.Entity):
+    id = PrimaryKey(int, auto=True)
+    adj_box_id = Required(int)
+    box = Required('Box')
+
+
 class Box(db.Entity):
     id = PrimaryKey(int)
-    row_id = Required(str)
+    row = Required(int)
     type = Required(BoxType)
     enclosure = Optional(Enclosure)
-    cross_row_id = Optional(int)
+    adjacent_boxes = Set(BoxAdjacent)
+    related_box = Optional(int)
     players = Set('Player')
