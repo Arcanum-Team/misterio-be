@@ -44,3 +44,6 @@ def hide_player_id(game):
     for player in game.players:
         player.id = None
 
+def get_envelop(game_id):
+    game = find_game_by_id(game_id)
+    return game.envelop

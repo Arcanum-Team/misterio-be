@@ -9,5 +9,9 @@ def get_cards():
 
 @db_session
 def get_card_info_by_id(card_id):
-    return select((c.id, c.name, c.type) for c in Card
-                  if c.id == card_id)[:]
+    c = Card.get(id = card_id)
+    return (c.id, c.name, c.type)
+
+@db_session
+def get_card(card_id):
+    return Card[card_id]

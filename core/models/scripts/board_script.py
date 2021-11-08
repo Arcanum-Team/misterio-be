@@ -1,19 +1,9 @@
 from typing import Dict, List
 from pony.orm import db_session
 
+from core.models.scripts.cards_script import cards
 from core.models import Enclosure, Box, BoxType, BoxAdjacent
 from core.repositories import get_all_boxes, get_box_by_id, get_box_type_by_id, get_enclosure_by_id
-
-enclosures: Dict[int, str] = {
-    1: "GARAGE",
-    2: "BEDROOM",
-    3: "LIBRARY",
-    4: "LOBBY",
-    5: "PANTHEON",
-    6: "CELLAR",
-    7: "LIVING_ROOM",
-    8: "LABORATORY"
-}
 
 box_types: Dict[int, str] = {
     1: "NONE",
@@ -85,8 +75,13 @@ traps: Dict[int, Cross] = {
 
 @db_session
 def populate_enclosures():
-    for key, value in enclosures.items():
-        Enclosure(id=key, value=value)
+    i = 1
+    for key, value in cards.items():
+        if key == "ENCLOSURE":
+            for e in value:
+                Enclosure(id=i, value=e)
+                i = i + 1
+
 
 
 @db_session
