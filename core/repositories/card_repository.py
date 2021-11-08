@@ -1,6 +1,7 @@
 from pony.orm import db_session, select
 from core.models.card_model import Card
 
+
 @db_session
 def get_cards():
     return select((c.id, c.name, c.type) for c in Card)[:]
