@@ -6,7 +6,7 @@ from starlette.endpoints import WebSocketEndpoint
 from starlette.types import ASGIApp, Scope, Receive, Send
 
 from core import logger
-from core.models import find_basic_player
+from core.repositories import find_basic_player
 from core.schemas import BasicPlayerInfo
 
 websocket_router = APIRouter()

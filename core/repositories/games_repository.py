@@ -3,8 +3,8 @@ import random
 from pony.orm import db_session, select, ObjectNotFound
 from core import logger
 from core.exceptions import MysteryException
+from core.models.card_model import Mistery
 from core.models.games_model import Game
-from core.repositories import cards_assignment
 from core.repositories.player_repository import find_player_by_id
 from core.models.players_model import Player
 from core.schemas import PlayerOutput, GameOutput
@@ -71,6 +71,29 @@ def start_game_and_set_player_order(game_id):
     cards_assignment(game_id)
     return game_output
 
+
+@db_session
+def cards_assignment(game_id):
+    cards_id_list = list(range(21))
+    random_mistery_monster = random.randint(0, 5)
+    random_mistery_victim = random.randint(6, 11)
+    random_mistery_enclosure = random.randint(12, 19)
+    Mistery(game_id=game_id, mistery_monster=random_mistery_monster, mistery_victim=random_mistery_victim,
+            mistery_enclosure=random_mistery_enclosure)
+    cards_id_list.remove(random_mistery_monster)
+    cards_id_list.remove(random_mistery_victim)
+    cards_id_list.remove(random_mistery_enclosure)
+
+    g = Game[game_id]
+    cards_by_player = int(18 / len(g.players))
+    for i in g.players:
+        for j in range(cards_by_player):
+            random_card = random.choice(cards_id_list)
+            if (random_card == 20):
+                i.witch = True
+            else:
+                i.cards.append(random_card)
+            cards_id_list.remove(random_card)
 
 @db_session
 def find_complete_game(id):

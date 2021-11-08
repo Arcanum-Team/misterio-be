@@ -1,17 +1,30 @@
-from typing import Optional
-from pony.orm import Required, Set, PrimaryKey, Optional
-from . import db
+from pony.orm import Required, PrimaryKey, Optional, Set
+from core.models import db
 
-class Box(db.Entity):
-    id = PrimaryKey(int, default=1)
-    row = Required(int)
-    attribute = Required(str, default="NONE")
-    enclosure_id = Optional('Enclosure') 
-    arrow = Required(str, default="NONE")
-    row_id = Optional(int)
-    players = Set('Player')
 
 class Enclosure(db.Entity):
-    id = PrimaryKey(int, default=0)
-    name = Required(str)
-    doors = Set(Box)
+    id = PrimaryKey(int)
+    value = Required(str)
+    doors = Set('Box')
+
+
+class BoxType(db.Entity):
+    id = PrimaryKey(int)
+    value = Required(str)
+    boxes = Set('Box')
+
+
+class BoxAdjacent(db.Entity):
+    id = PrimaryKey(int, auto=True)
+    adj_box_id = Required(int)
+    box = Required('Box')
+
+
+class Box(db.Entity):
+    id = PrimaryKey(int)
+    row = Required(int)
+    type = Required(BoxType)
+    enclosure = Optional(Enclosure)
+    adjacent_boxes = Set(BoxAdjacent)
+    related_box = Optional(int)
+    players = Set('Player')
