@@ -1,1 +1,1 @@
-from .board_service import find_possible_movements
+from .board_service import get_complete_board

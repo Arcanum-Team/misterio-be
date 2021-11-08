@@ -11,7 +11,6 @@ class EnclosureOutput(BaseModel):
 class BoxOutput(BaseModel):
     id: int
     position: Optional[int]
-    row: int
     attribute: str
     enclosure: Optional[EnclosureOutput]
 

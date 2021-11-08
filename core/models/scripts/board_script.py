@@ -3,7 +3,7 @@ from pony.orm import db_session
 from pydantic import BaseModel, Required
 
 from core.models import Enclosure, Box, BoxType, BoxAdjacent
-from core.repositories import get_complete_board, get_box_by_id, get_box_type_by_id, get_enclosure_by_id
+from core.repositories import get_all_boxes, get_box_by_id, get_box_type_by_id, get_enclosure_by_id
 
 enclosures: Dict[int, str] = {
     1: "GARAGE",
@@ -117,7 +117,7 @@ def populate_traps():
 
 @db_session
 def board_was_populated():
-    return len(get_complete_board()) > 0
+    return len(get_all_boxes()) > 0
 
 
 @db_session
