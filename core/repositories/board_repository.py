@@ -85,11 +85,13 @@ def get_box_type_by_id(id: int):
 
 
 @db_session
-def get_adjacent_boxes(id: int):
+def get_adjacent_boxes(id: int, exclude: int):
     box: Box = get_box_by_id(id)
-    result: List[int] = list()
+    result = set()
     for adj in box.adjacent_boxes:
-        result.append(adj.adj_box_id)
+        result.add(adj.adj_box_id)
+    if exclude > 0:
+        filter(lambda v: v != exclude, result)
     return result
 
 

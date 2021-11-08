@@ -142,8 +142,10 @@ def append_adjacent_basic_boxes():
             for bi in value:
                 for id in bi.ids:
                     box: Box = get_box_by_id(id)
-                    BoxAdjacent(adj_box_id=id - 1, box=box)
-                    BoxAdjacent(adj_box_id=id + 1, box=box)
+                    if id not in [26, 46, 66, 73]:
+                        BoxAdjacent(adj_box_id=id + 1, box=box)
+                    if id not in [28, 48, 68, 75]:
+                        BoxAdjacent(adj_box_id=id - 1, box=box)
         else:  # key is 2 (entry)
             for bi in value:
                 for id in bi.ids:
