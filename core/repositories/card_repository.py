@@ -3,14 +3,14 @@ from core.models.card_model import Card
 
 cards = [  # monsters
     ["DRACULA", "MONSTER"], ["FRANKENSTEIN", "MONSTER"], ["HOMBRE LOBO", "MONSTER"],
-    ["FANTASMA", "MONSTER"], ["MOMIA", "MONSTER"], ["DR.JEKYLL MR.HYDE", "MONSTER"],
+    ["FANTASMA", "MONSTER"], ["MOMIA", "MONSTER"], ["DR.JEKYLL MR.HYDE", "MONSTER"],#5
     # victims
     ["CONDE", "VICTIM"], ["CONDESA", "VICTIM"], ["AMA DE LLAVES", "VICTIM"],
-    ["MOYORDOMO", "VICTIM"], ["DONCELLA", "VICTIM"], ["JARDINERO", "VICTIM"],
+    ["MOYORDOMO", "VICTIM"], ["DONCELLA", "VICTIM"], ["JARDINERO", "VICTIM"],#11
     # enclosures
     ["COCHERA", "ENCLOSURE"], ["ALCOBA", "ENCLOSURE"], ["BIBLIOTECA", "ENCLOSURE"],
     ["VESTIBULO", "ENCLOSURE"], ["PANTEON", "ENCLOSURE"], ["BODEGA", "ENCLOSURE"],
-    ["SALON", "ENCLOSURE"], ["LABORATORIO", "ENCLOSURE"]
+    ["SALON", "ENCLOSURE"], ["LABORATORIO", "ENCLOSURE"] #19
 ]
 
 

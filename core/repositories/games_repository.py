@@ -23,7 +23,12 @@ def get_game_by_name(name):
 
 @db_session
 def new_game(game):
-    g = Game(name=game.game_name)
+    monster = random.randint(0,5)
+    victim = random.randint(6,11)
+    enclosure = random.randint(12,19)
+    envelop = [monster, victim, enclosure]
+    logger.info(envelop)
+    g = Game(name=game.game_name, envelop=envelop)
     return Player(nickname=game.nickname, game=g, host=True)
 
 
