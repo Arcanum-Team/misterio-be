@@ -142,3 +142,12 @@ def pass_turn(game_id):
         t = game.turn + 1
     game.turn = Position(t).value
     return GameOutput.from_orm(game)
+
+@db_session
+def find_enclosure_by_player_id(player_id):
+    p= find_player_by_id(player_id)
+    player_current_box= p.current_position
+    if player_current_box.enclosure: 
+        p.in_enclosure= True
+    return player_current_box.enclosure
+
