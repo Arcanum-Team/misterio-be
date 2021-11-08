@@ -136,7 +136,8 @@ class LiveGameRoom:
 
 
 games: Dict[UUID, LiveGameRoom] = {}
-
+def get_wbGames(game_id):
+    return games[game_id]
 
 class GamesEventMiddleware:  # pylint: disable=too-few-public-methods
     """Middleware for providing a global :class:`~.LivingGameRoom` instance to both HTTP
