@@ -8,9 +8,10 @@ from pony.orm import TransactionIntegrityError, ObjectNotFound
 
 from core import logger
 from core.exceptions import MysteryException
-from core.repositories import join_player_to_game, get_games, new_game, start_game, find_complete_game, pass_turn
+from core.repositories import join_player_to_game, get_games, new_game, pass_turn
 from core.schemas import NewGame, PlayerOutput, GameJoin, GameOutput, GamePassTurn
 from core.schemas.games_schema import GameBasicInfo, GameStart
+from core.services import start_new_game, find_game_hide_player_id
 
 games_router = APIRouter()
 
@@ -39,21 +40,7 @@ def join_to_game(game_join: GameJoin):
 
 @games_router.get("/{id}", response_model=GameOutput)
 def find_game_by_id(id: UUID):
-    try:
-        game: GameOutput = find_complete_game(id)
-
-        hide_player_id(game)
-
-        return game
-    except ObjectNotFound:
-        logger.error("Game not found [{}]".format(id))
-        raise MysteryException(message="Game not found!", status_code=404)
-
-
-def hide_player_id(game):
-    # Hide ids
-    for player in game.players:
-        player.id = None
+    return find_game_hide_player_id(id)
 
 
 @games_router.get("/", response_model=List[GameBasicInfo])
@@ -63,10 +50,7 @@ def get_all_available_games():
 
 @games_router.put("/start", response_model=GameOutput)
 def start_created_game(game: GameStart):
-    game_started = start_game(game)
-    hide_player_id(game_started)
-    game_started.players.sort(key=lambda player: player.order)
-    return game_started
+    return start_new_game(game)
 
 
 @games_router.put("/pass_turn", response_model=GameOutput)
