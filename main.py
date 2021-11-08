@@ -9,6 +9,7 @@ from pony.orm import *
 from fastapi import FastAPI
 
 from core.models.scripts import populate_board
+from core.models.scripts import initialize_cards
 from core.settings import settings
 from v1.api import api_router
 from v1.endpoints import GamesEventMiddleware
@@ -51,3 +52,4 @@ app.add_middleware(
 app.add_middleware(GamesEventMiddleware)
 
 populate_board()
+initialize_cards()

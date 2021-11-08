@@ -3,12 +3,12 @@ import random
 from pony.orm import db_session, select, ObjectNotFound
 from core import logger
 from core.exceptions import MysteryException
-from core.models.card_model import Mistery
 from core.models.games_model import Game
 from core.repositories.player_repository import find_player_by_id
 from core.models.players_model import Player
 from core.schemas import PlayerOutput, GameOutput
 from core.schemas.player_schema import Position
+from core.repositories.card_repository import get_card
 
 
 @db_session
@@ -23,12 +23,7 @@ def get_game_by_name(name):
 
 @db_session
 def new_game(game):
-    monster = random.randint(0,5)
-    victim = random.randint(6,11)
-    enclosure = random.randint(12,19)
-    envelop = [monster, victim, enclosure]
-    logger.info(envelop)
-    g = Game(name=game.game_name, envelop=envelop)
+    g = Game(name=game.game_name)
     return Player(nickname=game.nickname, game=g, host=True)
 
 
@@ -79,26 +74,28 @@ def start_game_and_set_player_order(game_id):
 
 @db_session
 def cards_assignment(game_id):
-    cards_id_list = list(range(21))
-    random_mistery_monster = random.randint(0, 5)
-    random_mistery_victim = random.randint(6, 11)
-    random_mistery_enclosure = random.randint(12, 19)
-    Mistery(game_id=game_id, mistery_monster=random_mistery_monster, mistery_victim=random_mistery_victim,
-            mistery_enclosure=random_mistery_enclosure)
+    cards_id_list = list(range(1,21))
+    random_mistery_enclosure = random.randint(1, 8)
+    random_mistery_monster = random.randint(9, 14)
+    random_mistery_victim = random.randint(15, 20)
+    envelop = [random_mistery_enclosure, random_mistery_monster, random_mistery_victim]
+
     cards_id_list.remove(random_mistery_monster)
     cards_id_list.remove(random_mistery_victim)
     cards_id_list.remove(random_mistery_enclosure)
 
     g = Game[game_id]
-    cards_by_player = int(18 / len(g.players))
+    g.envelop = envelop
+    k = 3
+    if len(g.players) == 6:
+        k = 2
     for i in g.players:
-        for j in range(cards_by_player):
-            random_card = random.choice(cards_id_list)
-            if (random_card == 20):
-                i.witch = True
-            else:
-                i.cards.append(random_card)
-            cards_id_list.remove(random_card)
+        cards = random.sample(cards_id_list, k=k)
+        cardsDb = []
+        for c in cards:
+            cards_id_list.remove(c)
+            cardsDb.append(get_card(c))
+        i.cards = cardsDb
 
 
 @db_session

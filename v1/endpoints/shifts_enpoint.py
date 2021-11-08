@@ -4,11 +4,11 @@ from pony.orm.core import ObjectNotFound, get
 from core.schemas import Movement
 from core.services import move_player_service
 from core.settings import logger
-from core.exceptions import MysteryException
 from core.schemas import Movement, Acusse
-from core.repositories.games_repository import find_game_by_id
-from core.repositories.card_repository import get_cards, get_card_info_by_id
-from v1.endpoints.websocket_endpoints import get_wbGames
+from core.services.game_service import get_envelop
+from core.services.shifts_service import valid_card
+from v1.endpoints.websocket_endpoints import games
+
 
 shifts_router = APIRouter()
 
@@ -20,29 +20,17 @@ def move_player(movement: Movement):
 
 @shifts_router.post("/accuse")
 def accuse(accuse: Acusse):
-    try:
-        game = find_game_by_id(accuse.game_id)
-    except ObjectNotFound:
-        logger.error("Game not found [{}]".format(id))
-        raise MysteryException(message="Game not found!", status_code=404)
-
-    envelope = game.Envelop
+    envelope = get_envelop(accuse.game_id)
     logger.info(envelope)
-    ac = []
-    ac.append(get_card_info_by_id(accuse.monster_id))
-    ac.append(get_card_info_by_id(accuse.victim_id))
-    ac.append(get_card_info_by_id(accuse.enclosure_id))
-    if ac[0].type != "MONSTER":
-        raise MysteryException(message="La carta no es un monstruo!", status_code=400)
-    if ac[1].type != "VICTIM":
-        raise MysteryException(message="La carta no es una victima!", status_code=400)
-    if ac[2].type != "ENCLOSURE":
-        raise MysteryException(message="La carta no es un recinto!", status_code=400)
-    
-    res = True
-    for i in range(3):
-        res = (ac[i].id == envelope[i].id) and res
-    wb = get_wbGames(accuse.game_id)
+    a = []
+    a.append(valid_card("ENCLOSURE", accuse.enclosure_id))
+    a.append(valid_card("MONSTER", accuse.monster_id))
+    a.append(valid_card("VICTIM", accuse.victim_id))
+    r = set(envelope).intersection(a)
+    res = False
+    if not r:
+        res = True
+    wb = games[accuse.game_id]
     if res:
         wb.broadcast_message(accuse.player_id,"Gane")
     else:

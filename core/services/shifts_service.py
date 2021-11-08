@@ -1,5 +1,7 @@
 from core.repositories import get_adjacent_boxes
 from core.schemas import Movement
+from core.exceptions import MysteryException
+from core.repositories.card_repository import get_card_info_by_id
 from core.services.game_service import get_valid_game
 
 
@@ -23,3 +25,10 @@ def get_possible_movement(dice_number: int, position: int):
 
 def move_player_service(movement: Movement):
     return get_valid_game(movement.player_id, movement.game_id)
+
+def valid_card(type, id):
+    res = True
+    card = get_card_info_by_id(id)
+    if(card.type != type):
+        raise MysteryException(message="card is not a ${type}!", status_code=400)
+    return id

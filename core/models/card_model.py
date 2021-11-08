@@ -8,10 +8,3 @@ class Card(db.Entity):
     name = Required(str)
     type = Required(str)
     players = Set('Player')
-
-
-class Mistery(db.Entity):
-    mistery_monster = Required(int)
-    mistery_victim = Required(int)
-    mistery_enclosure = Required(int)
-    game_id = Required(UUID)
