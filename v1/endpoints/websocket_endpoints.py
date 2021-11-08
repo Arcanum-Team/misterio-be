@@ -137,7 +137,6 @@ class LiveGameRoom:
 
 games: Dict[UUID, LiveGameRoom] = {}
 
-
 class GamesEventMiddleware:  # pylint: disable=too-few-public-methods
     """Middleware for providing a global :class:`~.LivingGameRoom` instance to both HTTP
     and WebSocket scopes.
