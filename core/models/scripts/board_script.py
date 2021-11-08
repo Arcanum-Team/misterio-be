@@ -1,6 +1,5 @@
-from typing import Dict, List, Optional, Set
+from typing import Dict, List
 from pony.orm import db_session
-from pydantic import BaseModel, Required
 
 from core.models import Enclosure, Box, BoxType, BoxAdjacent
 from core.repositories import get_all_boxes, get_box_by_id, get_box_type_by_id, get_enclosure_by_id

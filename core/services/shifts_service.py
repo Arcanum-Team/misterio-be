@@ -1,5 +1,6 @@
 from core.repositories import get_adjacent_boxes
 from core.schemas import Movement
+from core.services.game_service import get_valid_game
 
 
 def find_possible_movements(depth: int, current_position: int, exclude: int):
@@ -20,6 +21,5 @@ def get_possible_movement(dice_number: int, position: int):
     return result
 
 
-def move_player(movement: Movement):
-    # possible_movements: List[Box] = find_possible_movements()
-    pass
+def move_player_service(movement: Movement):
+    return get_valid_game(movement.player_id, movement.game_id)

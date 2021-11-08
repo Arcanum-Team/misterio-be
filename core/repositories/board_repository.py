@@ -2,7 +2,7 @@ from typing import List
 
 from pony.orm import db_session
 from core.models.board_model import *
-from core.schemas.board_schema import BoxOutput, EnclosureOutput, RowOutput
+from core.schemas.board_schema import BoxOutput, EnclosureOutput
 
 
 @db_session

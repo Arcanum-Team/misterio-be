@@ -3,7 +3,7 @@ from fastapi import APIRouter
 from uuid import UUID
 from core.schemas.card_schema import CardBasicInfo
 from core.exceptions import MysteryException
-from core.repositories import get_card_info_by_id, get_cards, initialize_cards, get_cards_by_player_id
+from core.repositories import get_card_info_by_id, get_cards, initialize_cards
 
 cards_router = APIRouter()
 

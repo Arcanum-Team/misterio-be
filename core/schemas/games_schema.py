@@ -24,11 +24,19 @@ class NewGame(BaseModel):
     nickname: str = Field(min_length=1, max_length=20)
 
 
+class SimpleBox(BaseModel):
+    id: int
+
+    class Config:
+        orm_mode = True
+
+
 class PlayerInDB(BaseModel):
     id: Optional[UUID]
     nickname: str
     host: bool
     order: Optional[int]
+    current_position: Optional[SimpleBox]
 
     class Config:
         orm_mode = True
