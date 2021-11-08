@@ -8,6 +8,6 @@ class Game(db.Entity):
     name = Required(str, max_len=20, unique=True, index=True)
     started = Required(bool, default=False)
     turn = Required(int, default=1)
-    Envelop = Required(IntArray, default=[])
+    envelop = Required(IntArray, default=[])
     players = Set('Player')
     in_enclosure=Optional(bool, default=False)
