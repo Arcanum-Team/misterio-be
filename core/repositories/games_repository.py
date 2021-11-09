@@ -159,10 +159,10 @@ def start_game(game):
 def pass_turn(game_id):
     game = find_game_by_id(game_id)
     t = 1
-    if (not game.started):
+    if not game.started:
         raise MysteryException(message="Game isnt started yet!", status_code=400)
 
-    if (game.turn != len(game.players)):
+    if game.turn != len(game.players):
         t = game.turn + 1
     game.turn = Position(t).value
     return GameOutput.from_orm(game)

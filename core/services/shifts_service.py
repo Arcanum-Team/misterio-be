@@ -26,9 +26,8 @@ def get_possible_movement(dice_number: int, position: int):
 def move_player_service(movement: Movement):
     return get_valid_game(movement.player_id, movement.game_id)
 
-def valid_card(type, id):
-    res = True
+
+def valid_card(card_type, id):
     card = get_card_info_by_id(id)
-    if(card.type != type):
+    if card.type != card_type:
         raise MysteryException(message="card is not a ${type}!", status_code=400)
-    return id
