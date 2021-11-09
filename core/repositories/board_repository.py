@@ -43,6 +43,12 @@ def is_trap(box_id: int):
 
 
 @db_session
+def find_four_traps():
+    box_type: BoxType = BoxType.get(value="TRAP")
+    return [b.id for b in filter(lambda v: v.adjacent_boxes, box_type.boxes)]
+
+
+@db_session
 def get_adjacent_boxes(id: int, exclude: int):
     box: Box = get_box_by_id(id)
     result = set()
