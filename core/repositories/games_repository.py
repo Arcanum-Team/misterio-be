@@ -27,7 +27,7 @@ def get_game_by_name(name):
 @db_session
 def new_game(game):
     g = Game(name=game.game_name)
-    return Player(nickname=game.nickname, game=g, host=True)
+    return PlayerOutput.from_orm(Player(nickname=game.nickname, game=g, host=True))
 
 
 @db_session

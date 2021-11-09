@@ -10,7 +10,11 @@ box_types: Dict[int, str] = {
     2: "ENTRY",
     3: "TRAP",
     4: "ENCLOSURE_UP",
-    5: "ENCLOSURE_DOWN"
+    5: "ENCLOSURE_DOWN",
+    6: "COBRA",
+    7: "BAT",
+    8: "SCORPION",
+    9: "SPIDER",
 }
 
 
@@ -35,10 +39,10 @@ class BoxInput:
 # Key is box_type id
 basic_boxes: Dict[int, List[BoxInput]] = {
     1: [
-        BoxInput(row_id=1, ids=[2, 3, 4, 6, 8, 9, 10, 12, 13, 15, 17, 18, 19]),
-        BoxInput(row_id=2, ids=[22, 24, 25, 26, 28, 29, 30, 32, 33, 35, 37, 38, 39]),
-        BoxInput(row_id=3, ids=[42, 43, 44, 46, 48, 49, 50, 52, 53, 55, 56, 58, 59]),
-        BoxInput(row_id=4, ids=[62, 63, 65, 66, 68, 69, 70, 72, 73, 75, 76, 78, 79]),
+        BoxInput(row_id=1, ids=[2, 3, 6, 8, 9, 10, 12, 13, 17, 18, 19]),
+        BoxInput(row_id=2, ids=[22, 24, 26, 28, 29, 30, 32, 33, 37, 38, 39]),
+        BoxInput(row_id=3, ids=[42, 43, 46, 48, 49, 50, 52, 53, 56, 58, 59]),
+        BoxInput(row_id=4, ids=[62, 63, 66, 68, 69, 70, 72, 73, 75, 78, 79]),
     ],
     2: [
         BoxInput(row_id=1, ids=[1, 20]),
@@ -61,6 +65,18 @@ basic_boxes: Dict[int, List[BoxInput]] = {
         BoxInput(row_id=2, ids=[31], enclosure_id=4),
         BoxInput(row_id=2, ids=[36], enclosure_id=6),
         BoxInput(row_id=4, ids=[71], enclosure_id=7),
+    ],
+    6: [
+        BoxInput(row_id=1, ids=[4, 15]),
+    ],
+    7: [
+        BoxInput(row_id=2, ids=[25, 35]),
+    ],
+    8: [
+        BoxInput(row_id=3, ids=[44, 55]),
+    ],
+    9: [
+        BoxInput(row_id=4, ids=[65, 76]),
     ]
 }
 
@@ -81,7 +97,6 @@ def populate_enclosures():
             for e in value:
                 Enclosure(id=i, value=e)
                 i = i + 1
-
 
 
 @db_session
@@ -122,6 +137,8 @@ def append_adjacent_trap_boxes():
         BoxAdjacent(adj_box_id=key + 1, box=box)
         BoxAdjacent(adj_box_id=value.related_box_id - 1, box=box)
         BoxAdjacent(adj_box_id=value.related_box_id + 1, box=box)
+        BoxAdjacent(adj_box_id=key, box=get_box_by_id(value.related_box_id - 1))
+        BoxAdjacent(adj_box_id=key, box=get_box_by_id(value.related_box_id + 1))
 
 
 def append_adjacent_boxes():
@@ -132,7 +149,7 @@ def append_adjacent_boxes():
 @db_session
 def append_adjacent_basic_boxes():
     for key, value in basic_boxes.items():
-        if key in [1, 4, 5]:
+        if key not in [2]:
             for bi in value:
                 for id in bi.ids:
                     box: Box = get_box_by_id(id)

@@ -12,7 +12,6 @@ shifts_router = APIRouter()
 @shifts_router.put("/move")
 def move_player(movement: Movement):
     return move_player_service(movement)
-    pass
 
 
 @shifts_router.post("/accuse")
