@@ -34,7 +34,7 @@ def find_game_hide_player_id(game_id):
 
 def start_new_game(game: GameStart):
     game_started = start_game(game)
-    hide_player_id(game_started)
+    # hide_player_id(game_started)
     game_started.players.sort(key=lambda player: player.order)
     return game_started
 

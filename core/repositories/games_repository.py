@@ -4,8 +4,9 @@ from typing import Set, List, Dict
 from pony.orm import db_session, select, ObjectNotFound
 from core import logger
 from core.exceptions import MysteryException
-from core.models import Card
+from core.models import Card, Box
 from core.models.games_model import Game
+from core.repositories import get_boxes_by_type
 from core.repositories.player_repository import find_player_by_id
 from core.models.players_model import Player
 from core.schemas import PlayerOutput, GameOutput
@@ -59,7 +60,7 @@ def join_player_to_game(game_join):
 
 @db_session
 def start_game_and_set_player_order(game_id):
-    game = find_game_by_id(game_id)
+    game = cards_assignment(game_id)
     game.started = True
 
     player_count = len(game.players)
@@ -70,7 +71,6 @@ def start_game_and_set_player_order(game_id):
 
     game_output = GameOutput.from_orm(game)
     game_output.player_count = player_count
-    cards_assignment(game_id)
     return game_output
 
 
@@ -90,12 +90,18 @@ def cards_assignment(game_id):
     cards_id_list.remove(random_mystery_victim)
     cards_id_list.remove(random_mystery_enclosure)
 
-    g: Game = find_game_by_id(game_id)
-    g.envelop = envelop
+    game: Game = find_game_by_id(game_id)
+    game.envelop = envelop
 
     players: Dict[int, List[Card]] = {}
 
-    for player in g.players:
+    entries: List[Box] = list(get_boxes_by_type("ENTRY"))
+
+    # Initialize players dict and set
+    for player in game.players:
+        box = random.choice(entries)
+        player.current_position = box
+        entries.remove(box)
         players[player.id] = list()
 
     # Distribute rest of cards
@@ -108,8 +114,10 @@ def cards_assignment(game_id):
                 break
 
     for key, value in players.items():
-        player: Player = next(filter(lambda p: p.id == key, g.players))
+        player: Player = next(filter(lambda p: p.id == key, game.players))
         player.cards = value
+
+    return game
 
 
 @db_session
