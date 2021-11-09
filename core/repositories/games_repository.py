@@ -8,7 +8,7 @@ from core.repositories.player_repository import find_player_by_id
 from core.models.players_model import Player
 from core.schemas import PlayerOutput, GameOutput
 from core.schemas.player_schema import Position
-from core.repositories.card_repository import get_card
+from core.repositories.card_repository import get_card_by_id
 
 
 @db_session
@@ -94,7 +94,7 @@ def cards_assignment(game_id):
         cardsDb = []
         for c in cards:
             cards_id_list.remove(c)
-            cardsDb.append(get_card(c))
+            cardsDb.append(get_card_by_id(c))
         i.cards = cardsDb
 
 

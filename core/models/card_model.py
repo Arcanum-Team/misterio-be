@@ -1,4 +1,3 @@
-from uuid import UUID
 from pony.orm import Required, PrimaryKey, Set
 from core.models import db
 
