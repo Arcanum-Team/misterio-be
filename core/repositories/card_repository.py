@@ -4,7 +4,7 @@ from core.models.card_model import Card
 
 @db_session
 def get_cards():
-    return Card.select()
+    return Card.select().sort_by(Card.id)
 
 
 @db_session

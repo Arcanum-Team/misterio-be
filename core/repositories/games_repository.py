@@ -1,14 +1,16 @@
 import random
+from typing import Set, List, Dict
 
 from pony.orm import db_session, select, ObjectNotFound
 from core import logger
 from core.exceptions import MysteryException
+from core.models import Card
 from core.models.games_model import Game
 from core.repositories.player_repository import find_player_by_id
 from core.models.players_model import Player
 from core.schemas import PlayerOutput, GameOutput
 from core.schemas.player_schema import Position
-from core.repositories.card_repository import get_card_by_id
+from core.repositories.card_repository import get_card_by_id, get_cards
 
 
 @db_session
@@ -74,28 +76,40 @@ def start_game_and_set_player_order(game_id):
 
 @db_session
 def cards_assignment(game_id):
-    cards_id_list = list(range(1,21))
-    random_mistery_enclosure = random.randint(1, 8)
-    random_mistery_monster = random.randint(9, 14)
-    random_mistery_victim = random.randint(15, 20)
-    envelop = [random_mistery_enclosure, random_mistery_monster, random_mistery_victim]
+    cards: Set[Card] = get_cards()
+    cards_id_list: List[int] = list(map(lambda x: x.id, cards))
+    enclosures_id_list = list(map(lambda x: x.id, filter(lambda card: card.type == "ENCLOSURE", cards)))
+    victims_id_list = list(map(lambda x: x.id, filter(lambda card: card.type == "VICTIM", cards)))
+    monsters_id_list = list(map(lambda x: x.id, filter(lambda card: card.type == "MONSTER", cards)))
 
-    cards_id_list.remove(random_mistery_monster)
-    cards_id_list.remove(random_mistery_victim)
-    cards_id_list.remove(random_mistery_enclosure)
+    random_mystery_enclosure = random.choice(enclosures_id_list)
+    random_mystery_monster = random.choice(monsters_id_list)
+    random_mystery_victim = random.choice(victims_id_list)
+    envelop = [random_mystery_enclosure, random_mystery_monster, random_mystery_victim]
+    cards_id_list.remove(random_mystery_monster)
+    cards_id_list.remove(random_mystery_victim)
+    cards_id_list.remove(random_mystery_enclosure)
 
-    g = Game[game_id]
+    g: Game = find_game_by_id(game_id)
     g.envelop = envelop
-    k = 3
-    if len(g.players) == 6:
-        k = 2
-    for i in g.players:
-        cards = random.sample(cards_id_list, k=k)
-        cardsDb = []
-        for c in cards:
-            cards_id_list.remove(c)
-            cardsDb.append(get_card_by_id(c))
-        i.cards = cardsDb
+
+    players: Dict[int, List[Card]] = {}
+
+    for player in g.players:
+        players[player.id] = list()
+
+    # Distribute rest of cards
+    while len(cards_id_list) > 0:
+        for value in players.values():
+            card_id = random.choice(cards_id_list)
+            value.append(get_card_by_id(card_id))
+            cards_id_list.remove(card_id)
+            if len(cards_id_list) == 0:
+                break
+
+    for key, value in players.items():
+        player: Player = next(filter(lambda p: p.id == key, g.players))
+        player.cards = value
 
 
 @db_session
