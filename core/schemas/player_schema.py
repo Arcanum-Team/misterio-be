@@ -1,4 +1,5 @@
 from enum import Enum
+from typing import Optional
 from uuid import UUID
 
 from pydantic.main import BaseModel
@@ -41,3 +42,8 @@ class PlayerOutput(BaseModel):
 class BasicPlayerInfo(BaseModel):
     id: UUID
     nickname: str
+
+class PlayerPosition(BaseModel):
+    current_position: Optional(int)
+    enclosure: Optional(int)
+    
