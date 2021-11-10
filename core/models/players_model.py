@@ -14,3 +14,4 @@ class Player(db.Entity):
     cards = Set('Card')
     color = Optional(str)
     current_position = Optional('Box')
+    enclosure = Optional('Enclosure')
