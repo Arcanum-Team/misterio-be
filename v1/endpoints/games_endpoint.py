@@ -22,7 +22,7 @@ def create_game(game: NewGame):
     try:
         if not game.game_name:
             game.game_name = id_generator()
-        return PlayerOutput.from_orm(new_game(game))
+        return new_game(game)
     except TransactionIntegrityError as e:
         logger.error(e)
         raise MysteryException(message="Duplicated Game!", status_code=400)

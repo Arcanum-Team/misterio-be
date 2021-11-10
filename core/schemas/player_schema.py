@@ -29,11 +29,17 @@ class GameInDB(BaseModel):
         orm_mode = True
 
 
+class BoxOutput(BaseModel):
+    id: int
+    attribute: str
+
+
 class PlayerOutput(BaseModel):
     id: UUID
     nickname: str
     host: bool
     game: GameInDB
+    current_position: Optional[BoxOutput]
 
     class Config:
         orm_mode = True
