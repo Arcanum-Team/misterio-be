@@ -1,6 +1,6 @@
 from uuid import UUID
-
-from pydantic import BaseModel, Field
+from core.exceptions import MysteryException
+from pydantic import BaseModel, Field, validator
 
 
 class Movement(BaseModel):
@@ -14,4 +14,14 @@ class Acusse(BaseModel):
     player_id: UUID
     monster_id: int
     victim_id: int
-    enclosure_id: int 
+    enclosure_id: int
+
+
+class RollDice(BaseModel):
+    player_id: UUID
+    dice: int
+
+    @validator('dice')
+    def dice_range(cls, d):
+        if d not in range(7):
+            raise MysteryException(message="Dice not in correct range", status_code=400)
