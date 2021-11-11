@@ -6,6 +6,7 @@ class Enclosure(db.Entity):
     id = PrimaryKey(int)
     value = Required(str)
     doors = Set('Box')
+    players = Set('Player')
 
 
 class BoxType(db.Entity):

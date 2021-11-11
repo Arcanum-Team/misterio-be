@@ -10,7 +10,7 @@ from core.repositories import get_boxes_by_type
 from core.repositories.player_repository import find_player_by_id
 from core.models.players_model import Player
 from core.schemas import PlayerOutput, GameOutput
-from core.schemas.player_schema import Position
+from core.schemas.player_schema import Position, GameInDB, BoxOutput
 from core.repositories.card_repository import get_card_by_id, get_cards
 
 
@@ -166,3 +166,21 @@ def pass_turn(game_id):
         t = game.turn + 1
     game.turn = Position(t).value
     return GameOutput.from_orm(game)
+
+
+@db_session
+def find_player_by_id_and_game_id(player_id, game_id):
+    logger.info(f"game: {game_id} player: {player_id}")
+    game: Game = find_game_by_id(game_id)
+    logger.info(f"game: {game}")
+    player: Player = next(filter(lambda p: p.id == player_id, game.players))
+    if not player:
+        raise MysteryException(message="Player Not found!", status_code=404)
+    return PlayerOutput(id=player.id,
+                        nickname=player.nickname,
+                        host=player.host,
+                        game=GameInDB.from_orm(player.game),
+                        current_position=BoxOutput(
+                            id=player.current_position.id,
+                            attribute=player.current_position.type.value)
+                        )
