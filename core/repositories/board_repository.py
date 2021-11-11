@@ -25,6 +25,29 @@ def get_box_type_by_id(id: int):
     return BoxType[id]
 
 
+def is_special_box(value):
+    return value in ["COBRA", "SCORPION", "BAT", "SPIDER"]
+
+
+@db_session
+def get_adj_special_box(box_id: int):
+    box: Box = get_box_by_id(box_id)
+    if is_special_box(box.type.value):
+        return next(filter(lambda b: b.id != box_id, box.type.boxes)).id
+    return None
+
+
+@db_session
+def is_trap(box_id: int):
+    return get_box_by_id(box_id).type.value == "TRAP"
+
+
+@db_session
+def find_four_traps():
+    box_type: BoxType = BoxType.get(value="TRAP")
+    return [b.id for b in filter(lambda v: v.adjacent_boxes, box_type.boxes)]
+
+
 @db_session
 def get_adjacent_boxes(id: int, exclude: int):
     box: Box = get_box_by_id(id)
@@ -57,3 +80,8 @@ def get_complete_row(row_id: int):
         position = position + 1
     output.sort(key=lambda row: row.position)
     return output
+
+
+@db_session
+def get_boxes_by_type(value_type: str):
+    return Box.select(type=BoxType.get(value=value_type))

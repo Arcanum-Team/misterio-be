@@ -1,14 +1,17 @@
 import random
+from typing import Set, List, Dict
 
 from pony.orm import db_session, select, ObjectNotFound
 from core import logger
 from core.exceptions import MysteryException
+from core.models import Card, Box
 from core.models.games_model import Game
+from core.repositories import get_boxes_by_type
 from core.repositories.player_repository import find_player_by_id
 from core.models.players_model import Player
 from core.schemas import PlayerOutput, GameOutput
-from core.schemas.player_schema import Position
-from core.repositories.card_repository import get_card
+from core.schemas.player_schema import Position, GameInDB, BoxOutput
+from core.repositories.card_repository import get_card_by_id, get_cards
 
 
 @db_session
@@ -24,7 +27,7 @@ def get_game_by_name(name):
 @db_session
 def new_game(game):
     g = Game(name=game.game_name)
-    return Player(nickname=game.nickname, game=g, host=True)
+    return PlayerOutput.from_orm(Player(nickname=game.nickname, game=g, host=True))
 
 
 @db_session
@@ -57,7 +60,7 @@ def join_player_to_game(game_join):
 
 @db_session
 def start_game_and_set_player_order(game_id):
-    game = find_game_by_id(game_id)
+    game = cards_assignment(game_id)
     game.started = True
 
     player_count = len(game.players)
@@ -68,34 +71,53 @@ def start_game_and_set_player_order(game_id):
 
     game_output = GameOutput.from_orm(game)
     game_output.player_count = player_count
-    cards_assignment(game_id)
     return game_output
 
 
 @db_session
 def cards_assignment(game_id):
-    cards_id_list = list(range(1,21))
-    random_mistery_enclosure = random.randint(1, 8)
-    random_mistery_monster = random.randint(9, 14)
-    random_mistery_victim = random.randint(15, 20)
-    envelop = [random_mistery_enclosure, random_mistery_monster, random_mistery_victim]
+    cards: Set[Card] = get_cards()
+    cards_id_list: List[int] = list(map(lambda x: x.id, cards))
+    enclosures_id_list = list(map(lambda x: x.id, filter(lambda card: card.type == "ENCLOSURE", cards)))
+    victims_id_list = list(map(lambda x: x.id, filter(lambda card: card.type == "VICTIM", cards)))
+    monsters_id_list = list(map(lambda x: x.id, filter(lambda card: card.type == "MONSTER", cards)))
 
-    cards_id_list.remove(random_mistery_monster)
-    cards_id_list.remove(random_mistery_victim)
-    cards_id_list.remove(random_mistery_enclosure)
+    random_mystery_enclosure = random.choice(enclosures_id_list)
+    random_mystery_monster = random.choice(monsters_id_list)
+    random_mystery_victim = random.choice(victims_id_list)
+    envelop = [random_mystery_enclosure, random_mystery_monster, random_mystery_victim]
+    cards_id_list.remove(random_mystery_monster)
+    cards_id_list.remove(random_mystery_victim)
+    cards_id_list.remove(random_mystery_enclosure)
 
-    g = Game[game_id]
-    g.envelop = envelop
-    k = 3
-    if len(g.players) == 6:
-        k = 2
-    for i in g.players:
-        cards = random.sample(cards_id_list, k=k)
-        cardsDb = []
-        for c in cards:
-            cards_id_list.remove(c)
-            cardsDb.append(get_card(c))
-        i.cards = cardsDb
+    game: Game = find_game_by_id(game_id)
+    game.envelop = envelop
+
+    players: Dict[int, List[Card]] = {}
+
+    entries: List[Box] = list(get_boxes_by_type("ENTRY"))
+
+    # Initialize players dict and set
+    for player in game.players:
+        box = random.choice(entries)
+        player.current_position = box
+        entries.remove(box)
+        players[player.id] = list()
+
+    # Distribute rest of cards
+    while len(cards_id_list) > 0:
+        for value in players.values():
+            card_id = random.choice(cards_id_list)
+            value.append(get_card_by_id(card_id))
+            cards_id_list.remove(card_id)
+            if len(cards_id_list) == 0:
+                break
+
+    for key, value in players.items():
+        player: Player = next(filter(lambda p: p.id == key, game.players))
+        player.cards = value
+
+    return game
 
 
 @db_session
@@ -137,19 +159,28 @@ def start_game(game):
 def pass_turn(game_id):
     game = find_game_by_id(game_id)
     t = 1
-    if (not game.started):
+    if not game.started:
         raise MysteryException(message="Game isnt started yet!", status_code=400)
 
-    if (game.turn != len(game.players)):
+    if game.turn != len(game.players):
         t = game.turn + 1
     game.turn = Position(t).value
     return GameOutput.from_orm(game)
 
-@db_session
-def find_enclosure_by_player_id(player_id):
-    p= find_player_by_id(player_id)
-    player_current_box= p.current_position
-    if player_current_box.enclosure: 
-        p.in_enclosure= True
-    return player_current_box.enclosure
 
+@db_session
+def find_player_by_id_and_game_id(player_id, game_id):
+    logger.info(f"game: {game_id} player: {player_id}")
+    game: Game = find_game_by_id(game_id)
+    logger.info(f"game: {game}")
+    player: Player = next(filter(lambda p: p.id == player_id, game.players))
+    if not player:
+        raise MysteryException(message="Player Not found!", status_code=404)
+    return PlayerOutput(id=player.id,
+                        nickname=player.nickname,
+                        host=player.host,
+                        game=GameInDB.from_orm(player.game),
+                        current_position=BoxOutput(
+                            id=player.current_position.id,
+                            attribute=player.current_position.type.value)
+                        )
