@@ -49,7 +49,7 @@ class BasicPlayerInfo(BaseModel):
     id: UUID
     nickname: str
 
+
 class PlayerPosition(BaseModel):
-    current_position: Optional(int)
-    enclosure: Optional(int)
-    
+    current_position: Optional[int]
+    enclosure: Optional[int]
