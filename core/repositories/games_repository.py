@@ -4,22 +4,14 @@ from typing import Set, List, Dict
 from pony.orm import db_session, select, ObjectNotFound
 from core import logger
 from core.exceptions import MysteryException
-<<<<<<< HEAD
-=======
 from core.models import Card, Box
->>>>>>> af90769ba4f782fd9fa1e1e5a64830814a3170ae
 from core.models.games_model import Game
 from core.repositories import get_boxes_by_type
 from core.repositories.player_repository import find_player_by_id
 from core.models.players_model import Player
 from core.schemas import PlayerOutput, GameOutput
-<<<<<<< HEAD
-from core.schemas.player_schema import Position
-from core.repositories.card_repository import get_card
-=======
 from core.schemas.player_schema import Position, GameInDB, BoxOutput
 from core.repositories.card_repository import get_card_by_id, get_cards
->>>>>>> af90769ba4f782fd9fa1e1e5a64830814a3170ae
 
 
 @db_session
@@ -84,30 +76,6 @@ def start_game_and_set_player_order(game_id):
 
 @db_session
 def cards_assignment(game_id):
-<<<<<<< HEAD
-    cards_id_list = list(range(1,21))
-    random_mistery_enclosure = random.randint(1, 8)
-    random_mistery_monster = random.randint(9, 14)
-    random_mistery_victim = random.randint(15, 20)
-    envelop = [random_mistery_enclosure, random_mistery_monster, random_mistery_victim]
-
-    cards_id_list.remove(random_mistery_monster)
-    cards_id_list.remove(random_mistery_victim)
-    cards_id_list.remove(random_mistery_enclosure)
-
-    g = Game[game_id]
-    g.envelop = envelop
-    k = 3
-    if len(g.players) == 6:
-        k = 2
-    for i in g.players:
-        cards = random.sample(cards_id_list, k=k)
-        cardsDb = []
-        for c in cards:
-            cards_id_list.remove(c)
-            cardsDb.append(get_card(c))
-        i.cards = cardsDb
-=======
     cards: Set[Card] = get_cards()
     cards_id_list: List[int] = list(map(lambda x: x.id, cards))
     enclosures_id_list = list(map(lambda x: x.id, filter(lambda card: card.type == "ENCLOSURE", cards)))
@@ -150,7 +118,6 @@ def cards_assignment(game_id):
         player.cards = value
 
     return game
->>>>>>> af90769ba4f782fd9fa1e1e5a64830814a3170ae
 
 
 @db_session
