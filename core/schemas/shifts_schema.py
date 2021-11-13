@@ -18,6 +18,7 @@ class Acusse(BaseModel):
 
 
 class RollDice(BaseModel):
+    game_id: UUID
     player_id: UUID
     dice: int
 

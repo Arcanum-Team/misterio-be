@@ -2,7 +2,7 @@ from fastapi import APIRouter
 from pony.orm.core import get
 from core.services import move_player_service, find_player_pos_service
 from core.settings import logger
-from core.schemas import Movement, Acusse, RollDice, Message, DataAccuse
+from core.schemas import Movement, Acusse, RollDice, Message, DataAccuse, DataRoll
 from core.services.game_service import get_envelop
 from core.services.shifts_service import set_loser_service, valid_card, get_possible_movement
 from v1.endpoints.websocket_endpoints import games
@@ -42,5 +42,8 @@ def accuse(accuse_input: Acusse):
 def roll_dice(roll: RollDice):
     pos = find_player_pos_service(RollDice.player_id)
     possible_boxes = get_possible_movement(RollDice.dice, pos)
-    #falta comunicar por web socket el resultado del dado.
+    wb = games[roll.game_id]
+    data = DataRoll(player_id=roll.player_id, dice=roll.dice)
+    message = Message(type="RollDice", data=data)
+    wb.broadcast_message(message)
     return possible_boxes

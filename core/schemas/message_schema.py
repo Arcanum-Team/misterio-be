@@ -9,6 +9,10 @@ class DataAccuse(DataMessage):
     result:bool
     cards:List[int]
 
+class DataRoll(DataMessage):
+    dice: int
+
+
 class Message(BaseModel):
     type: str
     data: DataMessage
