@@ -9,7 +9,6 @@ class Movement(BaseModel):
     next_box_id: int = Field(ge=1, le=80)
     dice_value: int = Field(ge=1, le=6)
 
-
 class Acusse(BaseModel):
     game_id: UUID
     player_id: UUID
