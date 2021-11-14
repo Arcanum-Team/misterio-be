@@ -8,10 +8,10 @@ from pony.orm import TransactionIntegrityError, ObjectNotFound
 
 from core import logger
 from core.exceptions import MysteryException
-from core.repositories import join_player_to_game, get_games, new_game, pass_turn
+from core.repositories import get_games, new_game, pass_turn
 from core.schemas import NewGame, PlayerOutput, GameJoin, GameOutput, GamePassTurn
 from core.schemas.games_schema import GameBasicInfo, GameStart
-from core.services import start_new_game, find_game_hide_player_id
+from core.services import start_new_game, find_game_hide_player_id, join_player
 
 
 games_router = APIRouter()
@@ -36,7 +36,7 @@ def id_generator(size=6, chars=string.ascii_uppercase + string.digits):
 @games_router.put("/join", response_model=PlayerOutput)
 def join_to_game(game_join: GameJoin):
     logger.info(game_join)
-    return PlayerOutput.from_orm(join_player_to_game(game_join))
+    return join_player(game_join)
 
 
 @games_router.get("/{id}", response_model=GameOutput)
