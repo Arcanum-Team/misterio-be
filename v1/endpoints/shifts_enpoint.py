@@ -37,12 +37,13 @@ def accuse(accuse_input: Acusse):
     return message
 
 
-@shifts_router.put("/rollDice")
+@shifts_router.put("/roll-dice")
 def roll_dice(roll: RollDice):
-    pos = find_player_pos_service(RollDice.player_id)
-    possible_boxes = get_possible_movement(RollDice.dice, pos)
-    wb = get_live_game_room(roll.game_id)
-    data = DataRoll(player_id=roll.player_id, dice=roll.dice)
-    message = Message(type="RollDice", data=data)
-    wb.broadcast_message(message)
+    logger.info(roll)
+    pos = find_player_pos_service(roll.player_id)
+    possible_boxes = get_possible_movement(roll.dice, pos)
+    # wb = get_live_game_room(roll.game_id)
+    # data = DataRoll(player_id=roll.player_id, dice=roll.dice)
+    # message = Message(type="RollDice", data=data)
+    # wb.broadcast_message(message)
     return possible_boxes

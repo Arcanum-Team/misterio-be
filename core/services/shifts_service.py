@@ -58,6 +58,7 @@ def valid_card(card_type, id):
     if card.type != card_type:
         raise MysteryException(message="card is not a ${type}!", status_code=400)
 
+
 def find_player_pos_service(player_id):
     try:
         player = find_player_by_id(player_id)
@@ -66,6 +67,7 @@ def find_player_pos_service(player_id):
     position_box = player.current_position
     box = position_box.id
     return box
+
 
 def set_loser_service(player_id):
     set_loser(player_id)
