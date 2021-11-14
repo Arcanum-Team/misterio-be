@@ -12,7 +12,7 @@ from core.repositories import join_player_to_game, get_games, new_game, pass_tur
 from core.schemas import NewGame, PlayerOutput, GameJoin, GameOutput, GamePassTurn
 from core.schemas.games_schema import GameBasicInfo, GameStart
 from core.services import start_new_game, find_game_hide_player_id
-#from board_service import find_possible_movements
+
 
 games_router = APIRouter()
 
@@ -62,6 +62,4 @@ def pass_game_turn(game: GamePassTurn):
         logger.error("Game not found [%s]", game.game_id)
         raise MysteryException(message="Game not found!", status_code=404)
 
-@games_router.put("/enter_enclosure/{player_id}")
-def enter_enclosure(player_id: UUID):
-    player_enclosure=find_enclosure_by_player_id(player_id)
+

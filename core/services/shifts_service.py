@@ -4,7 +4,7 @@ from core.repositories import get_adjacent_boxes, get_adj_special_box, is_trap, 
     update_current_position, find_player_by_id, get_card_info_by_id, find_four_traps, set_loser
 from core.schemas import Movement, PlayerOutput
 from core.exceptions import MysteryException
-
+from core.repositories.player_repository import find_player_by_id
 
 def find_possible_movements(depth: int, current_position: int, exclude: int):
     result = {current_position}
@@ -48,6 +48,7 @@ def move_player_service(movement: Movement):
         if movement.next_box_id not in possible_movement:
             raise MysteryException(message="Invalid movement!", status_code=400)
         # TODO send websocket message new player position
+        player.enclosure= None
         return update_current_position(movement.player_id, movement.next_box_id)
     except ObjectNotFound:
         raise MysteryException(message="Game not found!", status_code=404)
@@ -69,3 +70,4 @@ def find_player_pos_service(player_id):
 
 def set_loser_service(player_id):
     set_loser(player_id)
+

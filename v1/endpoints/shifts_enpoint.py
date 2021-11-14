@@ -1,3 +1,4 @@
+from uuid import UUID
 from fastapi import APIRouter
 from pony.orm.core import get
 from core.services import move_player_service, find_player_pos_service
@@ -6,6 +7,8 @@ from core.schemas import Movement, Acusse, RollDice, Message, DataAccuse, DataRo
 from core.services.game_service import get_envelop
 from core.services.shifts_service import set_loser_service, valid_card, get_possible_movement
 from v1.endpoints.websocket_endpoints import games
+from core.repositories.player_repository import find_enclosure_by_player_id
+
 
 shifts_router = APIRouter()
 
@@ -13,6 +16,11 @@ shifts_router = APIRouter()
 @shifts_router.put("/move")
 def move_player(movement: Movement):
     return move_player_service(movement)
+
+
+@shifts_router.put("/enter_enclosure/{player_id}")
+def enter_enclosure(player_id: UUID):
+    return find_enclosure_by_player_id(player_id)
 
 
 @shifts_router.post("/accuse")
@@ -47,3 +55,4 @@ def roll_dice(roll: RollDice):
     message = Message(type="RollDice", data=data)
     wb.broadcast_message(message)
     return possible_boxes
+

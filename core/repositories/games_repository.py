@@ -3,10 +3,10 @@ from typing import Set, List, Dict
 
 from pony.orm import db_session, select, ObjectNotFound
 from core import logger
-from core.exceptions import MysteryException
 from core.models import Card, Box
 from core.models.games_model import Game
 from core.repositories import get_boxes_by_type
+from core.exceptions import MysteryException
 from core.repositories.player_repository import find_player_by_id
 from core.models.players_model import Player
 from core.schemas import PlayerOutput, GameOutput
@@ -166,7 +166,6 @@ def pass_turn(game_id):
         t = game.turn + 1
     game.turn = Position(t).value
     return GameOutput.from_orm(game)
-
 
 @db_session
 def find_player_by_id_and_game_id(player_id, game_id):
