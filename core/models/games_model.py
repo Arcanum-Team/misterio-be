@@ -1,5 +1,5 @@
 import uuid
-from pony.orm import Required, Set, PrimaryKey, IntArray
+from pony.orm import Required, Set, PrimaryKey, IntArray, Optional
 from core.models import db
 
 

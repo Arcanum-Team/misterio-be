@@ -12,7 +12,7 @@ from core.repositories import join_player_to_game, get_games, new_game, pass_tur
 from core.schemas import NewGame, PlayerOutput, GameJoin, GameOutput, GamePassTurn
 from core.schemas.games_schema import GameBasicInfo, GameStart
 from core.services import start_new_game, find_game_hide_player_id
-from board_service import find_possible_movements
+#from board_service import find_possible_movements
 
 games_router = APIRouter()
 
