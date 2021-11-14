@@ -1,11 +1,9 @@
 from fastapi import APIRouter
-from pony.orm.core import get
 from core.services import move_player_service, find_player_pos_service
-from core.settings import logger
+from core.settings import logger, get_live_game_room
 from core.schemas import Movement, Acusse, RollDice, Message, DataAccuse, DataRoll
 from core.services.game_service import get_envelop
 from core.services.shifts_service import set_loser_service, valid_card, get_possible_movement
-from v1.endpoints.websocket_endpoints import games
 
 shifts_router = APIRouter()
 
@@ -33,16 +31,17 @@ def accuse(accuse_input: Acusse):
         message = Message(type="Accuse", data=data)
         set_loser_service(player_id)
 
-    wb = games[accuse_input.game_id]
+    wb = get_live_game_room(accuse_input.game_id)
     wb.broadcast_message(message)
 
     return message
+
 
 @shifts_router.put("/rollDice")
 def roll_dice(roll: RollDice):
     pos = find_player_pos_service(RollDice.player_id)
     possible_boxes = get_possible_movement(RollDice.dice, pos)
-    wb = games[roll.game_id]
+    wb = get_live_game_room(roll.game_id)
     data = DataRoll(player_id=roll.player_id, dice=roll.dice)
     message = Message(type="RollDice", data=data)
     wb.broadcast_message(message)
