@@ -1,12 +1,9 @@
 from pony.orm import ObjectNotFound
 
 from core.repositories import get_adjacent_boxes, get_adj_special_box, is_trap, find_player_by_id_and_game_id, \
-    update_current_position
-from core.repositories.board_repository import find_four_traps
+    update_current_position, find_player_by_id, get_card_info_by_id, find_four_traps, set_loser
 from core.schemas import Movement, PlayerOutput
 from core.exceptions import MysteryException
-from core.repositories.card_repository import get_card_info_by_id
-from core.repositories.player_repository import find_player_by_id
 
 
 def find_possible_movements(depth: int, current_position: int, exclude: int):
@@ -69,3 +66,6 @@ def find_player_pos_service(player_id):
     position_box = player.current_position
     box = position_box.id
     return box
+
+def set_loser_service(player_id):
+    set_loser(player_id)

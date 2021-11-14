@@ -36,3 +36,8 @@ def update_current_position(player_id, position):
                             id=player.current_position.id,
                             attribute=player.current_position.type.value)
                         )
+
+@db_session
+def set_loser(player_id):
+    player: Player = find_player_by_id(player_id)
+    player.loser = True

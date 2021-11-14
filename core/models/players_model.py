@@ -10,6 +10,7 @@ class Player(db.Entity):
     nickname = Required(str, max_len=20)
     game = Required(Game)
     host = Required(bool, default=False)
+    loser = Required(bool, default=False)
     order = Optional(int)
     cards = Set('Card')
     color = Optional(str)

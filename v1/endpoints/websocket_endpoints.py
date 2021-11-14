@@ -7,7 +7,7 @@ from starlette.types import ASGIApp, Scope, Receive, Send
 
 from core import logger
 from core.repositories import find_basic_player
-from core.schemas import BasicPlayerInfo
+from core.schemas import BasicPlayerInfo, Message
 
 websocket_router = APIRouter()
 
@@ -114,13 +114,11 @@ class LiveGameRoom:
             }
         )
 
-    async def broadcast_message(self, player_id: UUID, msg: str):
+    async def broadcast_message(self, message:Message):
         """Broadcast message to all connected players.
         """
         for websocket in self._players.values():
-            await websocket.send_json(
-                {"type": "MESSAGE", "data": {"player_id": player_id, "msg": msg}}
-            )
+            await websocket.send_json(message.json())
 
     async def broadcast_player_joined(self, player_id: UUID):
         """Broadcast message to all connected players.
