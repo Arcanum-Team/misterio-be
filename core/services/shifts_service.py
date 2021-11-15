@@ -1,8 +1,11 @@
+import json
+
 from pony.orm import ObjectNotFound
 
+from core import logger, get_live_game_room, LiveGameRoom
 from core.repositories import get_adjacent_boxes, get_adj_special_box, is_trap, find_player_by_id_and_game_id, \
     update_current_position, find_player_by_id, get_card_info_by_id, find_four_traps, set_loser
-from core.schemas import Movement, PlayerOutput
+from core.schemas import Movement, PlayerOutput, RollDice, DataRoll
 from core.exceptions import MysteryException
 
 
@@ -71,3 +74,13 @@ def find_player_pos_service(player_id):
 
 def set_loser_service(player_id):
     set_loser(player_id)
+
+
+async def roll_dice_service(roll: RollDice):
+    logger.info(roll)
+    pos = find_player_pos_service(roll.player_id)
+    possible_boxes = get_possible_movement(roll.dice, pos)
+    room: LiveGameRoom = get_live_game_room(roll.game_id)
+    data = DataRoll(game_id=roll.game_id, player_id=roll.player_id, dice=roll.dice)
+    await room.broadcast_json_message("VALUE_DICE", json.loads(data.json()))
+    return possible_boxes

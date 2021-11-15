@@ -1,9 +1,9 @@
 from fastapi import APIRouter
-from core.services import move_player_service, find_player_pos_service
+from core.services import move_player_service
 from core.settings import logger, get_live_game_room
-from core.schemas import Movement, Acusse, RollDice, Message, DataAccuse, DataRoll
+from core.schemas import Movement, Acusse, RollDice, Message, DataAccuse
 from core.services.game_service import get_envelop
-from core.services.shifts_service import set_loser_service, valid_card, get_possible_movement
+from core.services.shifts_service import set_loser_service, valid_card, roll_dice_service
 
 shifts_router = APIRouter()
 
@@ -38,12 +38,5 @@ def accuse(accuse_input: Acusse):
 
 
 @shifts_router.put("/roll-dice")
-def roll_dice(roll: RollDice):
-    logger.info(roll)
-    pos = find_player_pos_service(roll.player_id)
-    possible_boxes = get_possible_movement(roll.dice, pos)
-    # wb = get_live_game_room(roll.game_id)
-    # data = DataRoll(player_id=roll.player_id, dice=roll.dice)
-    # message = Message(type="RollDice", data=data)
-    # wb.broadcast_message(message)
-    return possible_boxes
+async def roll_dice(roll: RollDice):
+    return await roll_dice_service(roll)

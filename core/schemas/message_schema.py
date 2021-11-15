@@ -2,12 +2,16 @@ from typing import List
 from uuid import UUID, uuid4
 from pydantic.main import BaseModel
 
+
 class DataMessage(BaseModel):
     player_id: UUID
+    game_id: UUID
+
 
 class DataAccuse(DataMessage):
-    result:bool
-    cards:List[int]
+    result: bool
+    cards: List[int]
+
 
 class DataRoll(DataMessage):
     dice: int
