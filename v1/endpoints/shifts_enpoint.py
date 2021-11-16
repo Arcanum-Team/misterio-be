@@ -9,8 +9,8 @@ shifts_router = APIRouter()
 
 
 @shifts_router.put("/move")
-def move_player(movement: Movement):
-    return move_player_service(movement)
+async def move_player(movement: Movement):
+    return await move_player_service(movement)
 
 
 @shifts_router.post("/accuse")

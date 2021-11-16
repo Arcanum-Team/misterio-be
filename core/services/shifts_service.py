@@ -44,14 +44,16 @@ def get_possible_movement(dice_number: int, position: int):
     return result
 
 
-def move_player_service(movement: Movement):
+async def move_player_service(movement: Movement):
     try:
         player: PlayerOutput = find_player_by_id_and_game_id(movement.player_id, movement.game_id)
         possible_movement = get_possible_movement(movement.dice_value, player.current_position.id)
         if movement.next_box_id not in possible_movement:
             raise MysteryException(message="Invalid movement!", status_code=400)
-        # TODO send websocket message new player position
-        return update_current_position(movement.player_id, movement.next_box_id)
+        player_position = update_current_position(movement.player_id, movement.next_box_id)
+        room: LiveGameRoom = get_live_game_room(movement.game_id)
+        await room.broadcast_json_message("PLAYER_NEW_POSITION", json.loads(player_position.json()))
+        return player_position
     except ObjectNotFound:
         raise MysteryException(message="Game not found!", status_code=404)
 
