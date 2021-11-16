@@ -1,8 +1,9 @@
 from pony.orm import ObjectNotFound
 
 from core.repositories import get_adjacent_boxes, get_adj_special_box, is_trap, find_player_by_id_and_game_id, \
-    update_current_position, find_player_by_id, get_card_info_by_id, find_four_traps, set_loser
-from core.schemas import Movement, PlayerOutput
+    update_current_position, find_player_by_id, get_card_info_by_id, find_four_traps, set_loser, \
+    find_game_by_id, find_player_by_turn
+from core.schemas import Movement, PlayerOutput, Acusse
 from core.exceptions import MysteryException
 
 
@@ -69,3 +70,21 @@ def find_player_pos_service(player_id):
 
 def set_loser_service(player_id):
     set_loser(player_id)
+
+def validCards(accuse: Acusse):
+    valid_card("ENCLOSURE", accuse.enclosure_id)
+    valid_card("MONSTER", accuse.monster_id)
+    valid_card("VICTIM", accuse.victim_id)
+
+def get_player_reached(game_id, suspect_cards):
+    game = find_game_by_id(game_id)
+    player_turn = game.turn 
+    reached_player = None
+    l = len(game.players)
+    for i in range(0, l-1):
+        player = find_player_by_turn((player_turn + i % l) + 1)
+        cards = list(map(lambda c:c.id, player.cards))
+        if {} == set(cards).difference(suspect_cards):
+            reached_player = player
+
+    return reached_player

@@ -184,3 +184,13 @@ def find_player_by_id_and_game_id(player_id, game_id):
                             id=player.current_position.id,
                             attribute=player.current_position.type.value)
                         )
+
+@db_session
+def find_player_by_turn(game_id, turn):
+    game = find_game_by_id(game_id)
+    res = None
+    for player in game:
+        if player.order == turn:
+            res = player
+
+    return res

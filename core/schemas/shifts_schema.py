@@ -26,3 +26,5 @@ class RollDice(BaseModel):
     def dice_range(cls, d):
         if d not in range(7):
             raise MysteryException(message="Dice not in correct range", status_code=400)
+
+

@@ -48,3 +48,8 @@ def hide_player_id(game):
 def get_envelop(game_id):
     game = find_game_by_id(game_id)
     return game.envelop
+
+def valid_is_started(game_id):
+    game = find_game_by_id(game_id)
+    if not game.started:
+        raise MysteryException(message="Game is not started", status_code=400)
