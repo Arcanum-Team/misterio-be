@@ -8,7 +8,7 @@ from pydantic.main import BaseModel
 class GameJoin(BaseModel):
     game_name: str = Field(min_length=1, max_length=6)
     nickname: str = Field(min_length=1, max_length=20)
-
+    optional_password: Optional[str]= Field(max_length=10)
 
 class GameStart(BaseModel):
     game_id: UUID
@@ -22,6 +22,7 @@ class GamePassTurn(BaseModel):
 class NewGame(BaseModel):
     game_name: Optional[str] = Field(min_length=1, max_length=6)
     nickname: str = Field(min_length=1, max_length=20)
+    optional_password: Optional[str]= Field(max_length=10)
 
 
 class SimpleBox(BaseModel):

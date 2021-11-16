@@ -50,6 +50,10 @@ def join_player_to_game(game_join):
     if g.started:
         raise MysteryException(message="Game has already been started", status_code=400)
 
+    if g.password:
+        if g.password != game_join.optional_password:
+            raise MysteryException(message="password doesnt match, try again!", status_code=400)
+
     if len(g.players) == 6:
         raise MysteryException(message="Full game!", status_code=400)
 
