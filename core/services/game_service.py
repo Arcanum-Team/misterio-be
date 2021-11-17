@@ -28,7 +28,7 @@ def find_game_by_id_service(game_id):
 
 def find_game_hide_player_id(game_id):
     game = find_game_by_id_service(game_id)
-    hide_player_id(game)
+    # hide_player_id(game)
     return game
 
 

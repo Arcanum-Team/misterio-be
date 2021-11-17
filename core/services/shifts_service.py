@@ -1,8 +1,11 @@
+import json
+
 from pony.orm import ObjectNotFound
 
+from core import logger, get_live_game_room, LiveGameRoom
 from core.repositories import get_adjacent_boxes, get_adj_special_box, is_trap, find_player_by_id_and_game_id, \
     update_current_position, find_player_by_id, get_card_info_by_id, find_four_traps, set_loser
-from core.schemas import Movement, PlayerOutput
+from core.schemas import Movement, PlayerOutput, RollDice, DataRoll
 from core.exceptions import MysteryException
 
 
@@ -41,14 +44,16 @@ def get_possible_movement(dice_number: int, position: int):
     return result
 
 
-def move_player_service(movement: Movement):
+async def move_player_service(movement: Movement):
     try:
         player: PlayerOutput = find_player_by_id_and_game_id(movement.player_id, movement.game_id)
         possible_movement = get_possible_movement(movement.dice_value, player.current_position.id)
         if movement.next_box_id not in possible_movement:
             raise MysteryException(message="Invalid movement!", status_code=400)
-        # TODO send websocket message new player position
-        return update_current_position(movement.player_id, movement.next_box_id)
+        player_position = update_current_position(movement.player_id, movement.next_box_id)
+        room: LiveGameRoom = get_live_game_room(movement.game_id)
+        await room.broadcast_json_message("PLAYER_NEW_POSITION", json.loads(player_position.json()))
+        return player_position
     except ObjectNotFound:
         raise MysteryException(message="Game not found!", status_code=404)
 
@@ -71,3 +76,13 @@ def find_player_pos_service(player_id):
 
 def set_loser_service(player_id):
     set_loser(player_id)
+
+
+async def roll_dice_service(roll: RollDice):
+    logger.info(roll)
+    pos = find_player_pos_service(roll.player_id)
+    possible_boxes = get_possible_movement(roll.dice, pos)
+    room: LiveGameRoom = get_live_game_room(roll.game_id)
+    data = DataRoll(game_id=roll.game_id, player_id=roll.player_id, dice=roll.dice)
+    await room.broadcast_json_message("VALUE_DICE", json.loads(data.json()))
+    return possible_boxes
