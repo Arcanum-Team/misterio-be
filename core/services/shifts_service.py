@@ -5,7 +5,8 @@ from pony.orm import ObjectNotFound
 
 from core import logger, LiveGameRoom, get_live_game_room
 from core.repositories import get_adjacent_boxes, get_adj_special_box, is_trap, find_player_by_id_and_game_id, \
-    update_current_position, find_player_by_id, get_card_info_by_id, find_four_traps, set_loser, enter_enclosure
+    update_current_position, find_player_by_id, get_card_info_by_id, find_four_traps, set_loser, enter_enclosure, \
+    exit_enclosure
 from core.schemas import Movement, RollDice, PlayerBox, GamePlayer, BasicGameInput, DataRoll
 from core.exceptions import MysteryException
 from core.services.game_service import is_valid_game_player_service
@@ -109,11 +110,21 @@ async def enclosure_enter_service(player_game: BasicGameInput):
     logger.info(player_game)
     is_valid_game_player_service(player_game.game_id, player_game.player_id)
     try:
-        return enter_enclosure(player_game.player_id)
+        game_player: GamePlayer = enter_enclosure(player_game.player_id)
+        room: LiveGameRoom = get_live_game_room(player_game.game_id)
+        await room.broadcast_json_message("ENCLOSURE_ENTER", json.loads(game_player.json()))
+        return game_player
     except AssertionError:
         raise MysteryException(message="Invalid movement", status_code=400)
 
 
 async def enclosure_exit_service(player_game: PlayerBox):
     logger.info(player_game)
-    return find_player_by_id_game_id_service(player_game.player_id, player_game.game_id)
+    is_valid_game_player_service(player_game.game_id, player_game.player_id)
+    try:
+        game_player: GamePlayer = exit_enclosure(player_game.player_id, player_game.box_id)
+        room: LiveGameRoom = get_live_game_room(player_game.game_id)
+        await room.broadcast_json_message("ENCLOSURE_EXIT", json.loads(game_player.json()))
+        return game_player
+    except AssertionError:
+        raise MysteryException(message="Invalid movement", status_code=400)
