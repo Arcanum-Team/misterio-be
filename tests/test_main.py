@@ -1,8 +1,12 @@
 from fastapi.testclient import TestClient
-from v1.endpoints.games_endpoint import games_router #importar desde donde se quiere testear el objeto creado a partir de FastAPI
+from v1.endpoints.games_endpoint import games_router 
+#importar desde donde se quiere testear el objeto creado a partir de FastAPI
+from uuid import UUID
+import main
+
+game_info={}
 
 game_client = TestClient(games_router)
-
 
 def test_get_game():
     response = game_client.get("/",
@@ -10,44 +14,47 @@ def test_get_game():
     assert response.status_code == 200
 
 def test_post_games():
+    global game_info
     response = game_client.post("/",
     headers={'accept': 'application/json', 'Content-Type': 'application/json'},
     json={
-        "game_name": "string",
+        "game_name": "strin5",
         "nickname": "string"
         })
+    game_info= response.json()
     assert response.status_code == 201
 
 def test_put_games_join():
     response = game_client.put("/join",
     headers={'accept': 'application/json', 'Content-Type': 'application/json'},
-    json={
-        "game_name": "string",
-        "nickname": "string"
-        })
+    json={"game_name": "strin5",
+    "nickname": "string"
+    })
     assert response.status_code == 200
 
 def test_get_games_id():
-    id="c17ff26c-0328-4098-afbf-b0f852e85197"
-    response = game_client.get("/{id}",
+    global game_info
+    id=game_info['game']['id']
+    response = game_client.get("/"+id,
     headers={'accept': 'application/json'})
     assert response.status_code == 200
 
 def test_put_games_start():
+    global game_info
     response = game_client.put("/start",
     headers={'accept': 'application/json', 'Content-Type': 'application/json'}, 
     json= {
-        "game_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-        "player_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6"
-        })
+        "game_id": game_info['game']['id'],
+        "player_id": game_info['id']
+    })
     assert response.status_code == 200
 
 def test_put_games_pass_turn():
+    global game_info
     response = game_client.put("/pass_turn",
     headers={'accept': 'application/json',
-    'Content-Type': 'application/json'}, 
+        'Content-Type': 'application/json'}, 
     json= {
-        "game_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6"
-        })
+        "game_id": game_info['game']['id']
+    })
     assert response.status_code == 200
-
