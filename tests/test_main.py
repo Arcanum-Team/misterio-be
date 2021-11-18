@@ -24,6 +24,22 @@ def test_post_games():
     game_info= response.json()
     assert response.status_code == 201
 
+#--------------------------------------------------
+def test_post_games_error():
+    response = game_client.post("/",
+    headers={'accept': 'application/json', 'Content-Type': 'application/json'},
+    json={
+        "game_name": "strin5",
+        "nickname": "string"
+        })
+    assert response.status_code==400
+    assert response.json()== {
+        "message": "Duplicated Game!",
+        "path": "/api/v1/games/"
+        } 
+#--------------------------------------------------
+    
+
 def test_put_games_join():
     response = game_client.put("/join",
     headers={'accept': 'application/json', 'Content-Type': 'application/json'},
