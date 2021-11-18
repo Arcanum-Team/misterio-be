@@ -1,7 +1,7 @@
 import random
 from typing import Set, List, Dict
 
-from pony.orm import db_session, select, ObjectNotFound
+from pony.orm import db_session, select
 from core import logger
 from core.exceptions import MysteryException
 from core.models import Card, Box
@@ -9,7 +9,7 @@ from core.models.games_model import Game
 from core.repositories import get_boxes_by_type
 from core.repositories.player_repository import player_to_player_output
 from core.models.players_model import Player
-from core.schemas import PlayerOutput, GameOutput, GameListPlayers, GamePlayer, BasicGameInput
+from core.schemas import PlayerOutput, GameOutput, GameListPlayers, GamePlayer
 from core.repositories.card_repository import get_card_by_id, get_cards
 
 
