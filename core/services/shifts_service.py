@@ -3,10 +3,10 @@ from uuid import UUID
 
 from pony.orm import ObjectNotFound
 
-from core import logger, get_live_game_room, LiveGameRoom
+from core import logger, LiveGameRoom, get_live_game_room
 from core.repositories import get_adjacent_boxes, get_adj_special_box, is_trap, find_player_by_id_and_game_id, \
     update_current_position, find_player_by_id, get_card_info_by_id, find_four_traps, set_loser, enter_enclosure
-from core.schemas import Movement, PlayerOutput, RollDice, DataRoll, PlayerGame, PlayerBox, GamePlayer
+from core.schemas import Movement, RollDice, PlayerBox, GamePlayer, BasicGameInput, DataRoll
 from core.exceptions import MysteryException
 from core.services.game_service import is_valid_game_player_service
 
@@ -66,8 +66,8 @@ async def move_player_service(movement: Movement):
         raise MysteryException(message="Invalid movement!", status_code=400)
     new_player_position = update_current_position(movement.player_id, movement.next_box_id)
     game_player.player = new_player_position
-    # room: LiveGameRoom = get_live_game_room(movement.game_id)
-    # await room.broadcast_json_message("PLAYER_NEW_POSITION", json.loads(game_player.json()))
+    room: LiveGameRoom = get_live_game_room(movement.game_id)
+    await room.broadcast_json_message("PLAYER_NEW_POSITION", json.loads(game_player.json()))
     return game_player
 
 
@@ -95,9 +95,9 @@ async def roll_dice_service(roll: RollDice):
     logger.info(roll)
     pos = find_player_pos_service(roll.player_id)
     possible_boxes = get_possible_movement(roll.dice, pos)
-#    room: LiveGameRoom = get_live_game_room(roll.game_id)
-#    data = DataRoll(game_id=roll.game_id, player_id=roll.player_id, dice=roll.dice)
-#    await room.broadcast_json_message("VALUE_DICE", json.loads(data.json()))
+    room: LiveGameRoom = get_live_game_room(roll.game_id)
+    data = DataRoll(game_id=roll.game_id, player_id=roll.player_id, dice=roll.dice)
+    await room.broadcast_json_message("VALUE_DICE", json.loads(data.json()))
     return possible_boxes
 
 
@@ -105,7 +105,7 @@ def box_enclosure_enter(current_position):
     return current_position and current_position.attribute in ["ENCLOSURE_DOWN", "ENCLOSURE_UP"]
 
 
-async def enclosure_enter_service(player_game: PlayerGame):
+async def enclosure_enter_service(player_game: BasicGameInput):
     logger.info(player_game)
     is_valid_game_player_service(player_game.game_id, player_game.player_id)
     try:

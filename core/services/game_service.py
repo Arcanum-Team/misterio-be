@@ -1,11 +1,13 @@
+import json
 from uuid import UUID
 
 from pony.orm import ObjectNotFound
 
-from core import logger
+from core import logger, LiveGameRoom, get_live_game_room
 from core.exceptions import MysteryException
-from core.repositories import find_complete_game, start_game, find_game_by_id, join_player_to_game, is_valid_game_player
-from core.schemas import GameStart, GameJoin
+from core.repositories import find_complete_game, find_game_by_id, join_player_to_game, is_valid_game_player, \
+    start_game_and_set_player_order
+from core.schemas import BasicGameInput, GameJoin, GameListPlayers
 
 
 def get_valid_game(player_id: UUID, game_id: UUID):
@@ -32,9 +34,16 @@ def find_game_hide_player_id(game_id):
     return game
 
 
-def start_new_game(game: GameStart):
-    return start_game(game)
-    # hide_player_id(game_started)
+async def start_new_game(game: BasicGameInput):
+    logger.info(game)
+    try:
+        game_players: GameListPlayers = start_game_and_set_player_order(game.game_id, game.player_id)
+        room: LiveGameRoom = get_live_game_room(game.game_id)
+        await room.broadcast_json_message("START_GAME", json.loads(game_players.json()))
+        return game_players
+    except ObjectNotFound:
+        logger.error("Game not found [{}]".format(game.game_id))
+        raise MysteryException(message="Game not found!", status_code=404)
 
 
 def hide_player_id(game):

@@ -9,8 +9,8 @@ from pony.orm import TransactionIntegrityError, ObjectNotFound
 from core import logger
 from core.exceptions import MysteryException
 from core.repositories import get_games, new_game, pass_turn
-from core.schemas import NewGame, PlayerOutput, GameJoin, GameOutput, GamePassTurn
-from core.schemas.games_schema import GameBasicInfo, GameStart, GameListPlayers, GamePlayer
+from core.schemas import NewGame, GameJoin, GameOutput, GamePassTurn, GameListPlayers, GamePlayer
+from core.schemas.games_schema import GameBasicInfo, BasicGameInput
 from core.services import start_new_game, find_game_hide_player_id, join_player
 
 games_router = APIRouter()
@@ -49,8 +49,8 @@ def get_all_available_games():
 
 
 @games_router.put("/start", response_model=GameListPlayers)
-def start_created_game(game: GameStart):
-    return start_new_game(game)
+async def start_created_game(game: BasicGameInput):
+    return await start_new_game(game)
 
 
 @games_router.put("/pass_turn", response_model=GameOutput)

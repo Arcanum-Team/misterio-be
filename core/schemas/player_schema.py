@@ -4,13 +4,10 @@ from uuid import UUID
 from pydantic import Field
 from pydantic.main import BaseModel
 
-
-class PlayerGame(BaseModel):
-    game_id: UUID
-    player_id: UUID
+from core.schemas.games_schema import BasicGameInput, GameOutput
 
 
-class PlayerBox(PlayerGame):
+class PlayerBox(BasicGameInput):
     box_id: int = Field(ge=1, le=80)
 
 
@@ -50,3 +47,13 @@ class BasicPlayerInfo(BaseModel):
 class PlayerPosition(BaseModel):
     current_position: Optional[int]
     enclosure: Optional[int]
+
+
+class GameListPlayers(BaseModel):
+    game: GameOutput
+    players: List[PlayerOutput]
+
+
+class GamePlayer(BaseModel):
+    game: GameOutput
+    player: PlayerOutput

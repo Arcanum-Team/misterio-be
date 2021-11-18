@@ -1,10 +1,8 @@
-from typing import Optional, List
+from typing import Optional
 from uuid import UUID
 
-from pydantic import validator, Field
+from pydantic import Field
 from pydantic.main import BaseModel
-
-from core.schemas.player_schema import PlayerOutput
 
 
 class GameJoin(BaseModel):
@@ -12,7 +10,7 @@ class GameJoin(BaseModel):
     nickname: str = Field(min_length=1, max_length=20)
 
 
-class GameStart(BaseModel):
+class BasicGameInput(BaseModel):
     game_id: UUID
     player_id: UUID
 
@@ -49,12 +47,3 @@ class GameOutput(GameBasicInfo):
     class Config:
         orm_mode = True
 
-
-class GameListPlayers(BaseModel):
-    game: GameOutput
-    players: List[PlayerOutput]
-
-
-class GamePlayer(BaseModel):
-    game: GameOutput
-    player: PlayerOutput

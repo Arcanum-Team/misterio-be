@@ -2,9 +2,9 @@ from pony.orm import db_session
 
 from core.models import Box
 from core.models.players_model import Player
-from core.schemas import BasicPlayerInfo, PlayerOutput, BoxOutput
+from core.schemas import BasicPlayerInfo, PlayerOutput, BoxOutput, GamePlayer, GameOutput
 from core.schemas.card_schema import CardBasicInfo
-from core.schemas.player_schema import GameInDB, EnclosureOutput
+from core.schemas.player_schema import EnclosureOutput
 
 
 @db_session
@@ -44,8 +44,10 @@ def enter_enclosure(player_id):
     assert player.current_position.type.value in ["ENCLOSURE_DOWN", "ENCLOSURE_UP"]
     player.enclosure = player.current_position.enclosure
     player.current_position = None
-
-    return player_to_player_output(player)
+    return GamePlayer(
+        game=GameOutput.from_orm(player.game),
+        player=player_to_player_output(player)
+    )
 
 
 @db_session
