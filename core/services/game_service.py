@@ -4,7 +4,7 @@ from pony.orm import ObjectNotFound
 
 from core import logger
 from core.exceptions import MysteryException
-from core.repositories import find_complete_game, start_game, find_game_by_id, join_player_to_game
+from core.repositories import find_complete_game, start_game, find_game_by_id, join_player_to_game, is_valid_game_player
 from core.schemas import GameStart, GameJoin
 
 
@@ -33,10 +33,8 @@ def find_game_hide_player_id(game_id):
 
 
 def start_new_game(game: GameStart):
-    game_started = start_game(game)
+    return start_game(game)
     # hide_player_id(game_started)
-    game_started.players.sort(key=lambda player: player.order)
-    return game_started
 
 
 def hide_player_id(game):
@@ -52,4 +50,11 @@ def get_envelop(game_id):
 
 def join_player(game_join: GameJoin):
     return join_player_to_game(game_join)
+
+
+def is_valid_game_player_service(game_id, player_id):
+    try:
+        is_valid_game_player(game_id, player_id)
+    except ObjectNotFound:
+        raise MysteryException(message="Game not found!", status_code=404)
 

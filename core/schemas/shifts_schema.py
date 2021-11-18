@@ -1,6 +1,7 @@
 from uuid import UUID
-from core.exceptions import MysteryException
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field
+
+from core.schemas import PlayerGame
 
 
 class Movement(BaseModel):

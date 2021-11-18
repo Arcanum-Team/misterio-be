@@ -1,9 +1,10 @@
 from fastapi import APIRouter
 from core.services import move_player_service
 from core.settings import logger, get_live_game_room
-from core.schemas import Movement, Acusse, RollDice, Message, DataAccuse
+from core.schemas import Movement, Acusse, RollDice, Message, DataAccuse, PlayerGame, PlayerBox
 from core.services.game_service import get_envelop
-from core.services.shifts_service import set_loser_service, valid_card, roll_dice_service
+from core.services.shifts_service import set_loser_service, valid_card, roll_dice_service, enclosure_enter_service, \
+    enclosure_exit_service
 
 shifts_router = APIRouter()
 
@@ -40,3 +41,13 @@ def accuse(accuse_input: Acusse):
 @shifts_router.put("/roll-dice")
 async def roll_dice(roll: RollDice):
     return await roll_dice_service(roll)
+
+
+@shifts_router.put("/enclosure/enter")
+async def enclosure_enter(player_game: PlayerGame):
+    return await enclosure_enter_service(player_game)
+
+
+@shifts_router.put("/enclosure/exit")
+async def enclosure_enter(player_game: PlayerBox):
+    return await enclosure_exit_service(player_game)
