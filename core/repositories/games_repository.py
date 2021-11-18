@@ -7,10 +7,9 @@ from core.exceptions import MysteryException
 from core.models import Card, Box
 from core.models.games_model import Game
 from core.repositories import get_boxes_by_type
-from core.repositories.player_repository import find_player_by_id
+from core.repositories.player_repository import player_to_player_output
 from core.models.players_model import Player
-from core.schemas import PlayerOutput, GameOutput
-from core.schemas.player_schema import Position, GameInDB, BoxOutput
+from core.schemas import PlayerOutput, GameOutput, GameListPlayers, GamePlayer, BasicGameInput
 from core.repositories.card_repository import get_card_by_id, get_cards
 
 
@@ -21,13 +20,22 @@ def get_games():
 
 @db_session
 def get_game_by_name(name):
-    return select(g for g in Game if g.name == name)[:]
+    return Game.select(name=name)
 
 
 @db_session
 def new_game(game):
     g = Game(name=game.game_name)
-    return PlayerOutput.from_orm(Player(nickname=game.nickname, game=g, host=True))
+    player = Player(nickname=game.nickname, game=g, host=True)
+    return GamePlayer(game=game_to_game_output(g),
+                      player=player_to_player_output(player))
+
+
+@db_session
+def game_to_game_output(g):
+    game_output = GameOutput.from_orm(g)
+    game_output.player_count = len(g.players)
+    return game_output
 
 
 @db_session
@@ -55,27 +63,30 @@ def join_player_to_game(game_join):
 
     p = Player(nickname=game_join.nickname, game=g, host=False)
 
-    return PlayerOutput.from_orm(p)
+    return GamePlayer(game=game_to_game_output(g),
+                      player=player_to_player_output(p))
 
 
 @db_session
-def start_game_and_set_player_order(game_id):
-    game = cards_assignment(game_id)
+def start_game_and_set_player_order(game_id, player_id):
+
+    player: Player = find_valid_player(game_id, player_id)
+
+    game: Game = player.game
+
+    if not player.host:
+        raise MysteryException(message="Player not authorized!", status_code=403)
+
+    if game.started:
+        raise MysteryException(message="Game already started!", status_code=400)
+
+    if len(game.players) < 2:
+        raise MysteryException(message="Game needs more join players!", status_code=400)
+
+    # START SET INITIAL GAME
     game.started = True
+    game.turn = 1
 
-    player_count = len(game.players)
-    random_list = random.sample(range(1, player_count + 1), player_count)
-
-    for player in game.players:
-        player.order = random_list.pop(0)
-
-    game_output = GameOutput.from_orm(game)
-    game_output.player_count = player_count
-    return game_output
-
-
-@db_session
-def cards_assignment(game_id):
     cards: Set[Card] = get_cards()
     cards_id_list: List[int] = list(map(lambda x: x.id, cards))
     enclosures_id_list = list(map(lambda x: x.id, filter(lambda card: card.type == "ENCLOSURE", cards)))
@@ -90,7 +101,6 @@ def cards_assignment(game_id):
     cards_id_list.remove(random_mystery_victim)
     cards_id_list.remove(random_mystery_enclosure)
 
-    game: Game = find_game_by_id(game_id)
     game.envelop = envelop
 
     players: Dict[int, List[Card]] = {}
@@ -117,42 +127,33 @@ def cards_assignment(game_id):
         player: Player = next(filter(lambda p: p.id == key, game.players))
         player.cards = value
 
-    return game
+    player_count = len(game.players)
+    random_list = random.sample(range(1, player_count + 1), player_count)
+
+    for player in game.players:
+        player.order = random_list.pop(0)
+
+    # END SET INITIAL GAME
+
+    game_output = GameOutput.from_orm(game)
+    game_output.player_count = player_count
+
+    players_list: List[PlayerOutput] = [player_to_player_output(player) for player in game.players]
+    players_list.sort(key=lambda p: p.order)
+
+    return GameListPlayers(game=game_output, players=players_list)
 
 
 @db_session
 def find_complete_game(id):
-    game_output = GameOutput.from_orm(find_game_by_id(id))
-    game_output.player_count = len(game_output.players)
-    return game_output
+    game: Game = find_game_by_id(id)
+    game_field: GameOutput = GameOutput.from_orm(game)
+    game_field.player_count = len(game.players)
+    players_list: List[PlayerOutput] = [player_to_player_output(player) for player in game.players]
+    if game.started:
+        players_list.sort(key=lambda player: player.order)
 
-
-def start_game(game):
-    logger.info(game)
-    g: GameOutput
-    p: Player
-    try:
-        g = find_complete_game(game.game_id)
-    except ObjectNotFound:
-        logger.error("Game not found [{}]".format(game.game_id))
-        raise MysteryException(message="Game not found!", status_code=404)
-
-    try:
-        p = find_player_by_id(game.player_id)
-    except ObjectNotFound:
-        logger.error("Player not found [{}]".format(game.player_id))
-        raise MysteryException(message="Player not found!", status_code=404)
-
-    if not list(filter(lambda player: player.id == p.id and player.host, g.players)):
-        raise MysteryException(message="Player not authorized!", status_code=403)
-
-    if g.started:
-        raise MysteryException(message="Game already started!", status_code=400)
-
-    if g.player_count < 2:
-        raise MysteryException(message="Game needs more join players!", status_code=400)
-
-    return start_game_and_set_player_order(game.game_id)
+    return GameListPlayers(game=game_field, players=players_list)
 
 
 @db_session
@@ -162,25 +163,28 @@ def pass_turn(game_id):
     if not game.started:
         raise MysteryException(message="Game isnt started yet!", status_code=400)
 
-    if game.turn != len(game.players):
+    if game.turn < len(game.players):
         t = game.turn + 1
-    game.turn = Position(t).value
+    game.turn = t
     return GameOutput.from_orm(game)
 
 
 @db_session
 def find_player_by_id_and_game_id(player_id, game_id):
-    logger.info(f"game: {game_id} player: {player_id}")
+    player = find_valid_player(game_id, player_id)
+    return GamePlayer(game=GameOutput.from_orm(player.game), player=player_to_player_output(player))
+
+
+@db_session
+def find_valid_player(game_id, player_id):
+    logger.info(f"Find Player [game: {game_id} player: {player_id}]")
     game: Game = find_game_by_id(game_id)
-    logger.info(f"game: {game}")
-    player: Player = next(filter(lambda p: p.id == player_id, game.players))
+    player: Player = next(filter(lambda p: p.id == player_id, game.players), None)
     if not player:
         raise MysteryException(message="Player Not found!", status_code=404)
-    return PlayerOutput(id=player.id,
-                        nickname=player.nickname,
-                        host=player.host,
-                        game=GameInDB.from_orm(player.game),
-                        current_position=BoxOutput(
-                            id=player.current_position.id,
-                            attribute=player.current_position.type.value)
-                        )
+    return player
+
+
+@db_session
+def is_valid_game_player(game_id, player_id):
+    find_valid_player(game_id, player_id)
