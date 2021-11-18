@@ -58,6 +58,7 @@ def player_to_player_output(player):
     if player.enclosure:
         output.enclosure = EnclosureOutput(
             id=player.enclosure.id,
+            name=player.enclosure.value,
             doors=[BoxOutput(id=door.id, attribute=door.type.value) for door in player.enclosure.doors]
         )
     return output

@@ -27,6 +27,7 @@ class BoxOutput(BaseModel):
 
 class EnclosureOutput(BaseModel):
     id: int
+    name: str
     doors: Optional[List[BoxOutput]]
 
 
