@@ -1,6 +1,6 @@
 from pony.orm import db_session
 
-from core.models import Box, Enclosure
+from core.models import Box
 from core.models.players_model import Player
 from core.schemas import BasicPlayerInfo, PlayerOutput, BoxOutput, GamePlayer, GameOutput
 from core.schemas.card_schema import CardBasicInfo
