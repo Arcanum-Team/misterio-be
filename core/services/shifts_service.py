@@ -1,11 +1,15 @@
+import json
 from pony.orm import ObjectNotFound
 
+from core import LiveGameRoom, get_live_game_room
+from core.services import valid_is_started
 from core.repositories import get_adjacent_boxes, get_adj_special_box, is_trap, find_player_by_id_and_game_id, \
     update_current_position, find_player_by_id, get_card_info_by_id, find_four_traps, set_loser, \
     find_game_by_id, find_player_by_turn
-from core.schemas import Movement, PlayerOutput, Acusse
+from core.schemas import Movement, PlayerOutput, Acusse, DataSuspectNotice, DataSuspectRequest, \
+    SuspectResponse, DataSuspectResponse
 from core.exceptions import MysteryException
-
+from core.repositories.player_repository import find_player_by_id
 
 def find_possible_movements(depth: int, current_position: int, exclude: int):
     result = {current_position}
@@ -49,6 +53,7 @@ def move_player_service(movement: Movement):
         if movement.next_box_id not in possible_movement:
             raise MysteryException(message="Invalid movement!", status_code=400)
         # TODO send websocket message new player position
+        player.enclosure= None
         return update_current_position(movement.player_id, movement.next_box_id)
     except ObjectNotFound:
         raise MysteryException(message="Game not found!", status_code=404)
@@ -87,4 +92,26 @@ def get_player_reached(game_id, suspect_cards):
         if {} == set(cards).difference(suspect_cards):
             reached_player = player
 
-    return reached_player
+    return reached_player.id
+
+async def suspect_service(suspect: Acusse):
+    validCards(suspect)
+    valid_is_started(suspect.game_id)
+    suspect = [suspect.enclosure_id, suspect.monster_id, suspect.victim_id]
+    player_id = get_player_reached(suspect.game_id, suspect)
+    
+    room: LiveGameRoom = get_live_game_room(suspect.game_id)
+    data = DataSuspectNotice(player_id=suspect.player_id, reached_player_id=player_id)
+    await room.broadcast_json_message("SUSPECT", json.loads(data.json()))
+
+    data = DataSuspectRequest(player_id=suspect.player_id, enclosure_id=suspect.enclosure_id,
+        monster_id=suspect.monster_id, victim_id=suspect.victim_id)
+    await room.message_to_player(player_id, "SUSPECT_REQUEST", json.loads(data.json()))
+
+async def suspect_response_service(response :SuspectResponse):
+    room: LiveGameRoom = get_live_game_room(response.game_id)
+    data = DataSuspectResponse(card = response.card)
+    await room.message_to_player(response.player_id, "SUSPECT_RESPONSE", json.loads(data.json()))
+
+
+    

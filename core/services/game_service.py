@@ -4,8 +4,8 @@ from pony.orm import ObjectNotFound
 
 from core import logger
 from core.exceptions import MysteryException
-from core.repositories import find_complete_game, start_game, find_game_by_id
-from core.schemas import GameStart
+from core.repositories import find_complete_game, start_game, find_game_by_id, join_player_to_game
+from core.schemas import GameStart, GameJoin
 
 
 def get_valid_game(player_id: UUID, game_id: UUID):
@@ -53,3 +53,7 @@ def valid_is_started(game_id):
     game = find_game_by_id(game_id)
     if not game.started:
         raise MysteryException(message="Game is not started", status_code=400)
+
+def join_player(game_join: GameJoin):
+    return join_player_to_game(game_join)
+

@@ -5,13 +5,23 @@ from pydantic.main import BaseModel
 class DataMessage(BaseModel):
     player_id: UUID
 
+class DataSuspectNotice(DataMessage):
+    reached_player_id: UUID
+
+class DataSuspectRequest(DataMessage):
+    monster_id: int
+    victim_id: int
+    enclosure_id: int
+
+class DataSuspectResponse(BaseModel):
+    card: int
+
 class DataAccuse(DataMessage):
     result:bool
     cards:List[int]
 
 class DataRoll(DataMessage):
     dice: int
-
 
 class Message(BaseModel):
     type: str

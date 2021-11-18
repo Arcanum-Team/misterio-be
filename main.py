@@ -12,7 +12,7 @@ from core.models.scripts import populate_board
 from core.models.scripts import initialize_cards
 from core.settings import settings
 from v1.api import api_router
-from v1.endpoints import GamesEventMiddleware
+from core import GamesEventMiddleware
 
 app = FastAPI()
 

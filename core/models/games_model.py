@@ -1,5 +1,5 @@
 import uuid
-from pony.orm import Required, Set, PrimaryKey, IntArray
+from pony.orm import Required, Set, PrimaryKey, IntArray, Optional
 from core.models import db
 
 
@@ -10,3 +10,4 @@ class Game(db.Entity):
     turn = Required(int, default=1)
     envelop = Required(IntArray, default=[])
     players = Set('Player')
+    in_enclosure=Optional(bool, default=False)

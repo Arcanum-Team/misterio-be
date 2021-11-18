@@ -54,7 +54,7 @@ class GameBasicInfo(BaseModel):
 class GameOutput(GameBasicInfo):
     id: UUID
     players: List[PlayerInDB]
-    turn: int
+    turn: Optional[int]
 
     @validator('players', pre=True, allow_reuse=True)
     def players_to_players_in_db(cls, values):

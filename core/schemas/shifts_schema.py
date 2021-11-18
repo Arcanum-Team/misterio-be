@@ -28,3 +28,7 @@ class RollDice(BaseModel):
             raise MysteryException(message="Dice not in correct range", status_code=400)
 
 
+class SuspectResponse(BaseModel):
+    game_id: UUID
+    player_id: UUID
+    card: int
