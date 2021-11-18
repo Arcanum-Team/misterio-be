@@ -9,14 +9,14 @@ from pony.orm import TransactionIntegrityError, ObjectNotFound
 from core import logger
 from core.exceptions import MysteryException
 from core.repositories import get_games, new_game, pass_turn
-from core.schemas import NewGame, PlayerOutput, GameJoin, GameOutput, GamePassTurn
-from core.schemas.games_schema import GameBasicInfo, GameStart
+from core.schemas import NewGame, GameJoin, GameOutput, GamePassTurn, GameListPlayers, GamePlayer
+from core.schemas.games_schema import GameBasicInfo, BasicGameInput
 from core.services import start_new_game, find_game_hide_player_id, join_player
 
 games_router = APIRouter()
 
 
-@games_router.post("/", response_model=PlayerOutput, status_code=201)
+@games_router.post("/", response_model=GamePlayer, status_code=201)
 def create_game(game: NewGame):
     logger.info(game)
     try:
@@ -32,13 +32,13 @@ def id_generator(size=6, chars=string.ascii_uppercase + string.digits):
     return ''.join(random.choice(chars) for _ in range(size))
 
 
-@games_router.put("/join", response_model=PlayerOutput)
+@games_router.put("/join", response_model=GamePlayer)
 def join_to_game(game_join: GameJoin):
     logger.info(game_join)
     return join_player(game_join)
 
 
-@games_router.get("/{id}", response_model=GameOutput)
+@games_router.get("/{id}", response_model=GameListPlayers)
 def find_game_by_id(id: UUID):
     return find_game_hide_player_id(id)
 
@@ -48,9 +48,9 @@ def get_all_available_games():
     return [GameBasicInfo(name=row[0], player_count=row[1], started=row[2]) for row in get_games()]
 
 
-@games_router.put("/start", response_model=GameOutput)
-def start_created_game(game: GameStart):
-    return start_new_game(game)
+@games_router.put("/start", response_model=GameListPlayers)
+async def start_created_game(game: BasicGameInput):
+    return await start_new_game(game)
 
 
 @games_router.put("/pass_turn", response_model=GameOutput)

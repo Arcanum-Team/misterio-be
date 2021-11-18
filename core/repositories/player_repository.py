@@ -2,9 +2,9 @@ from pony.orm import db_session
 
 from core.models import Box
 from core.models.players_model import Player
-from core.schemas import BasicPlayerInfo, PlayerOutput, BoxOutput
+from core.schemas import BasicPlayerInfo, PlayerOutput, BoxOutput, GamePlayer, GameOutput
 from core.schemas.card_schema import CardBasicInfo
-from core.schemas.player_schema import GameInDB
+from core.schemas.player_schema import EnclosureOutput
 
 
 @db_session
@@ -28,16 +28,36 @@ def get_cards_by_player_id(player_id):
 def update_current_position(player_id, position):
     player: Player = find_player_by_id(player_id)
     player.current_position = Box[position]
-    return PlayerOutput(id=player.id,
-                        nickname=player.nickname,
-                        host=player.host,
-                        game=GameInDB.from_orm(player.game),
-                        current_position=BoxOutput(
-                            id=player.current_position.id,
-                            attribute=player.current_position.type.value)
-                        )
+    return player_to_player_output(player)
+
 
 @db_session
 def set_loser(player_id):
     player: Player = find_player_by_id(player_id)
     player.loser = True
+
+
+@db_session
+def enter_enclosure(player_id):
+    player: Player = find_player_by_id(player_id)
+    assert player.enclosure is None
+    assert player.current_position.type.value in ["ENCLOSURE_DOWN", "ENCLOSURE_UP"]
+    player.enclosure = player.current_position.enclosure
+    player.current_position = None
+    return GamePlayer(
+        game=GameOutput.from_orm(player.game),
+        player=player_to_player_output(player)
+    )
+
+
+@db_session
+def player_to_player_output(player):
+    output: PlayerOutput = PlayerOutput(id=player.id, nickname=player.nickname, host=player.host, order=player.order)
+    if player.current_position:
+        output.current_position = BoxOutput(id=player.current_position.id, attribute=player.current_position.type.value)
+    if player.enclosure:
+        output.enclosure = EnclosureOutput(
+            id=player.enclosure.id,
+            doors=[BoxOutput(id=door.id, attribute=door.type.value) for door in player.enclosure.doors]
+        )
+    return output
