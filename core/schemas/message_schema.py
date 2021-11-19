@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 from uuid import UUID, uuid4
 from pydantic.main import BaseModel
 
@@ -6,7 +6,10 @@ class DataMessage(BaseModel):
     player_id: UUID
 
 class DataSuspectNotice(DataMessage):
-    reached_player_id: UUID
+    reached_player_id: Optional[UUID]
+    monster_id: int
+    victim_id: int
+    enclosure_id: int
 
 class DataSuspectRequest(DataMessage):
     monster_id: int
@@ -14,7 +17,7 @@ class DataSuspectRequest(DataMessage):
     enclosure_id: int
 
 class DataSuspectResponse(BaseModel):
-    card: int
+    card: Optional[int]
 
 class DataAccuse(DataMessage):
     result:bool

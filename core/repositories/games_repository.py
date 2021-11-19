@@ -34,6 +34,9 @@ def new_game(game):
 def find_game_by_id(uuid):
     return Game[uuid]
 
+@db_session
+def get_game_players_count(uuid):
+    return len(Game[uuid].players)
 
 @db_session
 def find_game_by_name(name):
@@ -188,8 +191,9 @@ def find_player_by_id_and_game_id(player_id, game_id):
 def find_player_by_turn(game_id, turn):
     game = find_game_by_id(game_id)
     res = None
-    for player in game:
+    for player in game.players:
         if player.order == turn:
             res = player
+    cards = list(map(lambda x: x.id, res.cards))
 
-    return res
+    return res.id,cards

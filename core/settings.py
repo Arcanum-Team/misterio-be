@@ -172,9 +172,9 @@ class LiveGameRoom:
         for websocket in self._players.values():
             websocket.send_json({"type": "player_LEAVE", "data": player_id})
 
-    def message_to_player(self, player_id: UUID, message_type: str, data: Any):
-        wb = self._players[player_id]
-        wb.send_json({"type": message_type, "data": data})
+    async def message_to_player(self, player_id: UUID, message_type: str, data: Any):
+        wb = self._players.get(str(player_id))
+        await wb.send_json({"type": message_type, "data": data})
 
 
 games: Dict[UUID, LiveGameRoom] = {}

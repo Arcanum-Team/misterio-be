@@ -57,12 +57,12 @@ def roll_dice(roll: RollDice):
     return possible_boxes
 
 @shifts_router.post("/suspect")
-def suspect(suspect_input: Acusse):
-    suspect_service(suspect_input)
+async def suspect(suspect_input: Acusse):
+    return await suspect_service(suspect_input)
 
 @shifts_router.post("/suspectResponse")
-def suspectResponse(response: SuspectResponse):
-    suspect_response_service(response)
+async def suspectResponse(response: SuspectResponse):
+    return await suspect_response_service(response)
     
 
 
