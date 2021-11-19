@@ -162,9 +162,10 @@ class LiveGameRoom:
     async def broadcast_json_message(self, message_type: str, data: Any):
         """Broadcast message to all connected players.
         """
-
+        json_message = {"type": message_type, "data": data}
+        logger.info(json_message)
         for websocket in self._players.values():
-            await websocket.send_json({"type": message_type, "data": data})
+            await websocket.send_json(json_message)
 
     def broadcast_player_left(self, player_id: UUID):
         """Broadcast message to all connected players.
@@ -202,7 +203,6 @@ class GamesEventMiddleware:
         await self._app(scope, receive, send)
 
 
-def get_live_game_room(uuid: UUID):
-    logger.info(f"web socket games: {games}")
-    return games.get(str(uuid))
+def get_live_game_room(game_id):
+    return games.get(str(game_id))
 

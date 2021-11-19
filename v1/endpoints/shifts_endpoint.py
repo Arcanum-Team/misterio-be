@@ -1,26 +1,20 @@
-from uuid import UUID
 from fastapi import APIRouter
-from core.services import move_player_service, find_player_pos_service
+
+from core.schemas.games_schema import BasicGameInput
 from core.settings import logger, get_live_game_room
-from core.schemas import Movement, Acusse, RollDice, Message, DataAccuse, DataRoll, SuspectResponse
-from core.services.game_service import get_envelop, valid_is_started
-from core.services.shifts_service import set_loser_service, valid_card, get_possible_movement, suspect_service, \
-    suspect_response_service, validCards
-#from v1.endpoints.websocket_endpoints import games
-from core.repositories.player_repository import find_enclosure_by_player_id
+from core.services import set_loser_service, get_possible_movement, suspect_service, \
+    roll_dice_service, enclosure_enter_service, enclosure_exit_service, suspect_response_service, validCards, \
+    find_player_pos_service, move_player_service, get_envelop, valid_is_started
+from core.schemas import Movement, Acusse, RollDice, Message, DataAccuse, PlayerBox, GamePlayer, \
+    DataRoll, SuspectResponse
 
 
 shifts_router = APIRouter()
 
 
 @shifts_router.put("/move")
-def move_player(movement: Movement):
-    return move_player_service(movement)
-
-
-@shifts_router.put("/enter_enclosure/{player_id}")
-def enter_enclosure(player_id: UUID):
-    return find_enclosure_by_player_id(player_id)
+async def move_player(movement: Movement):
+    return await move_player_service(movement)
 
 
 @shifts_router.post("/accuse")
@@ -56,15 +50,27 @@ def roll_dice(roll: RollDice):
     wb.broadcast_message(message)
     return possible_boxes
 
+
 @shifts_router.post("/suspect")
 async def suspect(suspect_input: Acusse):
-    return await suspect_service(suspect_input)
+    await suspect_service(suspect_input)
+
 
 @shifts_router.post("/suspectResponse")
 async def suspectResponse(response: SuspectResponse):
     return await suspect_response_service(response)
-    
 
 
+@shifts_router.put("/roll-dice")
+async def roll_dice(roll: RollDice):
+    return await roll_dice_service(roll)
 
 
+@shifts_router.put("/enclosure/enter", response_model=GamePlayer)
+async def enclosure_enter(player_game: BasicGameInput):
+    return await enclosure_enter_service(player_game)
+
+
+@shifts_router.put("/enclosure/exit", response_model=GamePlayer)
+async def enclosure_exit(player_game: PlayerBox):
+    return await enclosure_exit_service(player_game)
