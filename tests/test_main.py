@@ -102,11 +102,7 @@ def test_get_payer_cards():
     headers={'accept': 'application/json'}) # aca va el path si es un get, put o post
     assert response.status_code == 200
 
-# board
-board_client = TestClient(board_router)
-def test_get_all_cards():
-    response = board_client.get("/",
-    headers={'accept': 'application/json'}) # aca va el path si es un get, put o post
-    assert response.status_code == 200
 
-    
+
+
+
