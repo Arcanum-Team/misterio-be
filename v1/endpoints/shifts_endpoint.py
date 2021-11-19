@@ -3,7 +3,7 @@ from fastapi import APIRouter
 from core.schemas.games_schema import BasicGameInput
 from core.settings import logger, get_live_game_room
 from core.services import set_loser_service, get_possible_movement, suspect_service, \
-    roll_dice_service, enclosure_enter_service, enclosure_exit_service, suspect_response_service, validCards, \
+    roll_dice_service, enclosure_enter_service, enclosure_exit_service, suspect_response_service, valid_cards, \
     find_player_pos_service, move_player_service, get_envelop, valid_is_started
 from core.schemas import Movement, Acusse, RollDice, Message, DataAccuse, PlayerBox, GamePlayer, \
     DataRoll, SuspectResponse
@@ -19,7 +19,7 @@ async def move_player(movement: Movement):
 
 @shifts_router.post("/accuse")
 def accuse(accuse_input: Acusse):
-    validCards(accuse_input)
+    valid_cards(accuse_input)
     valid_is_started(accuse_input.game_id)
     envelope = get_envelop(accuse_input.game_id)
     logger.info(envelope)
@@ -57,7 +57,7 @@ async def suspect(suspect_input: Acusse):
 
 
 @shifts_router.post("/suspectResponse")
-async def suspectResponse(response: SuspectResponse):
+async def suspect_response(response: SuspectResponse):
     return await suspect_response_service(response)
 
 

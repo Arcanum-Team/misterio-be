@@ -95,7 +95,7 @@ def set_loser_service(player_id):
     set_loser(player_id)
 
 
-def validCards(accuse: Acusse):
+def valid_cards(accuse: Acusse):
     valid_card("ENCLOSURE", accuse.enclosure_id)
     valid_card("MONSTER", accuse.monster_id)
     valid_card("VICTIM", accuse.victim_id)
@@ -116,7 +116,7 @@ def get_player_reached(game_id, suspect_cards):
 
 
 async def suspect_service(suspect: Acusse):
-    validCards(suspect)
+    valid_cards(suspect)
     valid_is_started(suspect.game_id)
     suspect_cards = [suspect.enclosure_id, suspect.monster_id, suspect.victim_id]
     player_id = get_player_reached(suspect.game_id, suspect_cards)
