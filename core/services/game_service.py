@@ -7,7 +7,8 @@ from core import logger, LiveGameRoom, get_live_game_room
 from core.exceptions import MysteryException
 from core.repositories import find_complete_game, find_game_by_id, join_player_to_game, is_valid_game_player, \
     start_game_and_set_player_order
-from core.schemas import BasicGameInput, GameJoin, GameListPlayers
+from core.schemas import GameJoin, GameListPlayers
+from core.schemas.player_schema import BasicGameInput
 
 
 def get_valid_game(player_id: UUID, game_id: UUID):
@@ -57,6 +58,12 @@ def get_envelop(game_id):
     return game.envelop
 
 
+def valid_is_started(game_id):
+    game = find_game_by_id(game_id)
+    if not game.started:
+        raise MysteryException(message="Game is not started", status_code=400)
+
+
 def join_player(game_join: GameJoin):
     return join_player_to_game(game_join)
 
@@ -66,4 +73,3 @@ def is_valid_game_player_service(game_id, player_id):
         is_valid_game_player(game_id, player_id)
     except ObjectNotFound:
         raise MysteryException(message="Game not found!", status_code=404)
-

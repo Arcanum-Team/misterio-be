@@ -51,6 +51,24 @@ def enter_enclosure(player_id):
 
 
 @db_session
+def exit_enclosure(player_id, box_id):
+    player: Player = find_player_by_id(player_id)
+    assert player.enclosure is not None
+    assert player.current_position is None
+
+    box: Box = next(filter(lambda b: b.id == box_id, player.enclosure.doors), None)
+
+    assert box is not None
+
+    player.enclosure = None
+    player.current_position = box
+    return GamePlayer(
+        game=GameOutput.from_orm(player.game),
+        player=player_to_player_output(player)
+    )
+
+
+@db_session
 def player_to_player_output(player):
     output: PlayerOutput = PlayerOutput(id=player.id, nickname=player.nickname, host=player.host, order=player.order)
     if player.current_position:
