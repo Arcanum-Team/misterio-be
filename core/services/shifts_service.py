@@ -7,7 +7,7 @@ from pony.orm import ObjectNotFound
 from core import logger, LiveGameRoom, get_live_game_room
 from core.repositories import get_adjacent_boxes, get_adj_special_box, is_trap, find_player_by_id_and_game_id, \
     update_current_position, find_player_by_id, get_card_info_by_id, find_four_traps, set_loser, enter_enclosure, \
-    find_game_by_id, find_player_by_turn, get_game_players_count, exit_enclosure
+    find_game_by_id, find_player_by_turn, get_game_players_count, exit_enclosure, pass_shift
 from core.schemas import Movement, RollDice, PlayerBox, GamePlayer, DataRoll, Acusse, \
     DataSuspectNotice, DataSuspectRequest, SuspectResponse, DataSuspectResponse
 from core.exceptions import MysteryException
@@ -165,5 +165,16 @@ async def enclosure_exit_service(player_game: PlayerBox):
         room: LiveGameRoom = get_live_game_room(player_game.game_id)
         await room.broadcast_json_message("ENCLOSURE_EXIT", json.loads(game_player.json()))
         return game_player
+    except AssertionError:
+        raise MysteryException(message="Invalid movement", status_code=400)
+
+
+async def pass_turn_service(player_game: BasicGameInput):
+    logger.info(player_game)
+    is_valid_game_player_service(player_game.game_id, player_game.player_id)
+    try:
+        game_player: GamePlayer = pass_shift(player_game.player_id)
+        room: LiveGameRoom = get_live_game_room(player_game.game_id)
+        await room.broadcast_json_message("ASSIGN_SHIFT", json.loads(game_player.json()))
     except AssertionError:
         raise MysteryException(message="Invalid movement", status_code=400)

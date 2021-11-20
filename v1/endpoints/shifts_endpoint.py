@@ -4,7 +4,7 @@ from core.schemas.games_schema import BasicGameInput
 from core.settings import logger, get_live_game_room
 from core.services import set_loser_service, get_possible_movement, suspect_service, \
     roll_dice_service, enclosure_enter_service, enclosure_exit_service, suspect_response_service, valid_cards, \
-    find_player_pos_service, move_player_service, get_envelop, valid_is_started
+    find_player_pos_service, move_player_service, get_envelop, valid_is_started, pass_turn_service
 from core.schemas import Movement, Acusse, RollDice, Message, DataAccuse, PlayerBox, GamePlayer, \
     DataRoll, SuspectResponse
 
@@ -74,3 +74,8 @@ async def enclosure_enter(player_game: BasicGameInput):
 @shifts_router.put("/enclosure/exit", response_model=GamePlayer)
 async def enclosure_exit(player_game: PlayerBox):
     return await enclosure_exit_service(player_game)
+
+
+@shifts_router.put("/pass")
+async def pass_game_turn(player_game: BasicGameInput):
+    await pass_turn_service(player_game)
