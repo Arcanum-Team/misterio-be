@@ -158,11 +158,8 @@ def find_complete_game(id):
 
 
 @db_session
-def pass_shift(player_id):
-    player: Player = find_player_by_id(player_id)
-    if not player.game.started:
-        raise MysteryException(message="Game is not started yet!", status_code=400)
-    assert player.order == player.game.turn
+def pass_shift(game_id, player_id):
+    player: Player = find_player_game_started_in_turn(game_id, player_id)
     next_player: Player = find_next_available_player(player)
     next_player.game.turn = next_player.order
     return GamePlayer(game=GameOutput.from_orm(next_player.game), player=player_to_player_output(next_player))

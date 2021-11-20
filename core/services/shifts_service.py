@@ -138,7 +138,10 @@ async def enclosure_enter_service(player_game: BasicGameInput):
     logger.info(player_game)
     is_valid_game_player_service(player_game.game_id, player_game.player_id)
     try:
-        return enter_enclosure(player_game.player_id)
+        game_player: GamePlayer = enter_enclosure(player_game.player_id)
+        room: LiveGameRoom = get_live_game_room(player_game.game_id)
+        await room.broadcast_json_message("ENCLOSURE_ENTER", json.loads(game_player.json()))
+        return game_player
     except AssertionError:
         raise MysteryException(message="Invalid movement", status_code=400)
 
@@ -157,9 +160,8 @@ async def enclosure_exit_service(player_game: PlayerBox):
 
 async def pass_turn_service(player_game: BasicGameInput):
     logger.info(player_game)
-    is_valid_game_player_service(player_game.game_id, player_game.player_id)
     try:
-        game_player: GamePlayer = pass_shift(player_game.player_id)
+        game_player: GamePlayer = pass_shift(player_game.game_id, player_game.player_id)
         room: LiveGameRoom = get_live_game_room(player_game.game_id)
         await room.broadcast_json_message("ASSIGN_SHIFT", json.loads(game_player.json()))
     except AssertionError:
