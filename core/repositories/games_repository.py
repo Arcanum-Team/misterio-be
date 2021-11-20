@@ -128,9 +128,7 @@ def start_game_and_set_player_order(game_id, player_id):
             cards_id_list.remove(card_id)
             if len(cards_id_list) == 0:
                 break
-    print("============")
-    print(player_with_witch)
-    print("============")
+
     for key, value in players.items():
         player: Player = next(filter(lambda p: p.id == key, game.players))
         player.cards = value
