@@ -13,6 +13,7 @@ from core.schemas import NewGame, GameJoin, GameOutput, GamePassTurn, GameListPl
 from core.schemas.games_schema import GameBasicInfo, BasicGameInput
 from core.services import start_new_game, find_game_hide_player_id, join_player
 
+
 games_router = APIRouter()
 
 
@@ -60,3 +61,5 @@ def pass_game_turn(game: GamePassTurn):
     except ObjectNotFound:
         logger.error("Game not found [%s]", game.game_id)
         raise MysteryException(message="Game not found!", status_code=404)
+
+

@@ -1,6 +1,8 @@
-from pydantic import Field
+from uuid import UUID
 
-from core.schemas import BasicGameInput
+from pydantic import Field, BaseModel
+
+from core.schemas.games_schema import BasicGameInput
 
 
 class Movement(BasicGameInput):
@@ -14,5 +16,13 @@ class Acusse(BasicGameInput):
     enclosure_id: int
 
 
-class RollDice(BasicGameInput):
+class RollDice(BaseModel):
+    game_id: UUID
+    player_id: UUID
     dice: int = Field(ge=1, le=6)
+
+
+class SuspectResponse(BaseModel):
+    game_id: UUID
+    player_id: UUID
+    card: int

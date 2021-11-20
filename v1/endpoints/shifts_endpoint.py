@@ -1,10 +1,13 @@
 from fastapi import APIRouter
-from core.services import move_player_service
+
+from core.schemas.games_schema import BasicGameInput
 from core.settings import logger, get_live_game_room
-from core.schemas import Movement, Acusse, RollDice, Message, DataAccuse, BasicGameInput, PlayerBox, GamePlayer
-from core.services.game_service import get_envelop
-from core.services.shifts_service import set_loser_service, valid_card, roll_dice_service, enclosure_enter_service, \
-    enclosure_exit_service
+from core.services import set_loser_service, get_possible_movement, suspect_service, \
+    roll_dice_service, enclosure_enter_service, enclosure_exit_service, suspect_response_service, valid_cards, \
+    find_player_pos_service, move_player_service, get_envelop, valid_is_started
+from core.schemas import Movement, Acusse, RollDice, Message, DataAccuse, PlayerBox, GamePlayer, \
+    DataRoll, SuspectResponse
+
 
 shifts_router = APIRouter()
 
@@ -16,11 +19,10 @@ async def move_player(movement: Movement):
 
 @shifts_router.post("/accuse")
 def accuse(accuse_input: Acusse):
+    valid_cards(accuse_input)
+    valid_is_started(accuse_input.game_id)
     envelope = get_envelop(accuse_input.game_id)
     logger.info(envelope)
-    valid_card("ENCLOSURE", accuse_input.enclosure_id)
-    valid_card("MONSTER", accuse_input.monster_id)
-    valid_card("VICTIM", accuse_input.victim_id)
     accuse = [accuse_input.enclosure_id, accuse_input.monster_id, accuse_input.victim_id]
     player_id = accuse_input.player_id
     r = set(envelope).difference(accuse)
@@ -36,6 +38,27 @@ def accuse(accuse_input: Acusse):
     wb.broadcast_message(message)
 
     return message
+
+
+@shifts_router.put("/rollDice")
+def roll_dice(roll: RollDice):
+    pos = find_player_pos_service(RollDice.player_id)
+    possible_boxes = get_possible_movement(RollDice.dice, pos)
+    wb = get_live_game_room(roll.game_id)
+    data = DataRoll(player_id=roll.player_id, dice=roll.dice)
+    message = Message(type="RollDice", data=data)
+    wb.broadcast_message(message)
+    return possible_boxes
+
+
+@shifts_router.post("/suspect")
+async def suspect(suspect_input: Acusse):
+    await suspect_service(suspect_input)
+
+
+@shifts_router.post("/suspectResponse")
+async def suspect_response(response: SuspectResponse):
+    return await suspect_response_service(response)
 
 
 @shifts_router.put("/roll-dice")

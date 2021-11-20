@@ -3,14 +3,12 @@ from typing import Set, List, Dict
 
 from pony.orm import db_session, select
 from core import logger
+from core.models import Card, Box, Player, Game
+from core.repositories import get_boxes_by_type, get_card_by_id, get_cards
 from core.exceptions import MysteryException
-from core.models import Card, Box
-from core.models.games_model import Game
-from core.repositories import get_boxes_by_type
+from core.schemas import PlayerOutput, GameOutput, GameListPlayers, GamePlayer, BoxOutput
+from core.schemas.player_schema import GameInDB
 from core.repositories.player_repository import player_to_player_output
-from core.models.players_model import Player
-from core.schemas import PlayerOutput, GameOutput, GameListPlayers, GamePlayer
-from core.repositories.card_repository import get_card_by_id, get_cards
 
 
 @db_session
@@ -44,6 +42,11 @@ def find_game_by_id(uuid):
 
 
 @db_session
+def get_game_players_count(uuid):
+    return len(Game[uuid].players)
+
+
+@db_session
 def find_game_by_name(name):
     return Game.get(name=name)
 
@@ -69,7 +72,6 @@ def join_player_to_game(game_join):
 
 @db_session
 def start_game_and_set_player_order(game_id, player_id):
-
     player: Player = find_valid_player(game_id, player_id)
 
     game: Game = player.game
@@ -183,6 +185,18 @@ def find_valid_player(game_id, player_id):
     if not player:
         raise MysteryException(message="Player Not found!", status_code=404)
     return player
+
+
+@db_session
+def find_player_by_turn(game_id, turn):
+    game = find_game_by_id(game_id)
+    res = None
+    for player in game.players:
+        if player.order == turn:
+            res = player
+    cards = list(map(lambda x: x.id, res.cards))
+
+    return res.id, cards
 
 
 @db_session

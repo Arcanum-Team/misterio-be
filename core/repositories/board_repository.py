@@ -85,5 +85,3 @@ def get_complete_row(row_id: int):
 @db_session
 def get_boxes_by_type(value_type: str):
     return Box.select(type=BoxType.get(value=value_type))
-
-
