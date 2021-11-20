@@ -1,3 +1,5 @@
+from typing import Set
+
 from pony.orm import db_session
 
 from core.models import Box
@@ -80,3 +82,28 @@ def player_to_player_output(player):
             doors=[BoxOutput(id=door.id, attribute=door.type.value) for door in player.enclosure.doors]
         )
     return output
+
+
+@db_session
+def find_available_players_without_me(player_in_shift: Player):
+    return set(filter(lambda p: p.id != player_in_shift.id and not p.loser, player_in_shift.game.players))
+
+
+def get_next_turn(current_turn, max_turn_value):
+    t = 1
+    if current_turn < max_turn_value:
+        t = current_turn + 1
+    return t
+
+
+@db_session
+def find_next_available_player(player_in_shift: Player):
+    available_players: Set[Player] = find_available_players_without_me(player_in_shift)
+    assert len(available_players) > 0
+    max_turn_value: int = len(player_in_shift.game.players)
+    next_player = None
+    current_turn: int = player_in_shift.order
+    while not next_player:
+        next_turn: int = get_next_turn(current_turn, max_turn_value)
+        next_player = next(filter(lambda p: p.order == next_turn, available_players), None)
+    return next_player
