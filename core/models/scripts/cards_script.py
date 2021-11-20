@@ -10,7 +10,8 @@ cards: Dict[str, List[str]] = {
     "MONSTER": ["DRACULA", "FRANKENSTEIN", "HOMBRE LOBO", "FANTASMA",
                 "MOMIA", "DR. JEKYLL MR. HYDE"],  # 14
 
-    "VICTIM": ["CONDE", "CONDESA", "AMA DE LLAVES", "MAYORDOMO", "DONCELLA", "JARDINERO"]  # 20
+    "VICTIM": ["CONDE", "CONDESA", "AMA DE LLAVES", "MAYORDOMO", "DONCELLA", "JARDINERO"],  # 20
+    "WITCH": ["BRUJA"]
 }
 
 

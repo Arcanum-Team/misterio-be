@@ -16,3 +16,4 @@ class Player(db.Entity):
     color = Optional(str)
     current_position = Optional('Box')
     enclosure = Optional('Enclosure')
+    
