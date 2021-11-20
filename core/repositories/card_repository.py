@@ -33,7 +33,7 @@ def witch(player_id):
             break
     if got_the_witch:
         game: Game= player.game
-        one_mistery_card=random.choice(game.envelop)
-        return get_card_by_id(one_mistery_card)
+        card = get_card_by_id(random.choice(game.envelop))
+        return CardBasicInfo(id=card.id, name=card.name, type=card.type)
     return False
 
