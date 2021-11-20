@@ -8,7 +8,7 @@ from core.services import set_loser_service, suspect_service, \
     roll_dice_service, enclosure_enter_service, enclosure_exit_service, suspect_response_service, valid_cards, \
     move_player_service, get_envelop, valid_is_started, pass_turn_service
 from core.schemas import Movement, Acusse, RollDice, Message, DataAccuse, PlayerBox, GamePlayer, \
-    SuspectResponse
+    SuspectResponse, Suspect
 
 
 shifts_router = APIRouter()
@@ -43,7 +43,7 @@ def accuse(accuse_input: Acusse):
 
 
 @shifts_router.post("/suspect")
-async def suspect(suspect_input: Acusse):
+async def suspect(suspect_input: Suspect):
     await suspect_service(suspect_input)
 
 
