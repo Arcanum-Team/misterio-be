@@ -6,7 +6,7 @@ from core import logger
 from core.models import Card, Box, Player, Game
 from core.repositories import get_boxes_by_type, get_card_by_id, get_cards
 from core.exceptions import MysteryException
-from core.schemas import PlayerOutput, GameOutput, GameListPlayers, GamePlayer
+from core.schemas import PlayerOutput, GameOutput, GameListPlayers, GamePlayer, Suspect, DataSuspectNotice
 from core.repositories.player_repository import player_to_player_output, find_player_by_id, find_next_available_player
 
 
@@ -181,21 +181,48 @@ def find_valid_player(game_id, player_id):
     player: Player = next(filter(lambda p: p.id == player_id, game.players), None)
     if not player:
         raise MysteryException(message="Player Not found!", status_code=404)
-    if player.loser:
-        raise MysteryException(message="Player have lost", status_code=404)
     return player
 
 
 @db_session
-def find_player_by_turn(game_id, turn):
-    game = find_game_by_id(game_id)
-    res = None
-    for player in game.players:
-        if player.order == turn:
-            res = player
-    cards = list(map(lambda x: x.id, res.cards))
+def find_player_game_started_in_turn(game_id, player_id):
+    player: Player = find_valid_player(game_id, player_id)
 
-    return res.id, cards
+    if not player.game.started:
+        raise MysteryException(message="Game Not started!", status_code=400)
+
+    if player.order != player.game.turn:
+        raise MysteryException(message="Player Not turn!", status_code=400)
+
+    return player
+
+
+@db_session
+def get_player_reached(player, suspect_cards):
+    players_len = len(player.game.players)
+    player_turn = player.order
+    for i in range(0, players_len - 1):
+        player_found: Player = find_player_by_turn(player.game.players, (player_turn + i % players_len) + 1)
+        if len(set(map(lambda c: c.id, player_found.cards)).intersection(suspect_cards)) > 0:
+            return player_found.id
+    return None
+
+
+@db_session
+def do_suspect(suspect: Suspect):
+    player: Player = find_player_game_started_in_turn(suspect.game_id, suspect.player_id)
+    if not player.enclosure:
+        raise MysteryException(message="Player is not in enclosure!", status_code=400)
+    enclosure_id = player.enclosure.id
+    player_reached = get_player_reached(player, {enclosure_id, suspect.monster_id, suspect.victim_id})
+    return DataSuspectNotice(player_id=suspect.player_id, reached_player_id=player_reached,
+                             enclosure_id=enclosure_id, monster_id=suspect.monster_id,
+                             victim_id=suspect.victim_id, game_id=suspect.game_id)
+
+
+@db_session
+def find_player_by_turn(players, turn):
+    return next(filter(lambda p: p.order == turn, players), None)
 
 
 @db_session

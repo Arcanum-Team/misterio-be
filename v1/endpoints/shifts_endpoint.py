@@ -3,12 +3,9 @@ from starlette.responses import Response
 from starlette.status import HTTP_204_NO_CONTENT
 
 from core.schemas.games_schema import BasicGameInput
-from core.settings import logger
 from core.services import suspect_service, roll_dice_service, enclosure_enter_service, \
-    enclosure_exit_service, suspect_response_service, valid_cards, \
-    move_player_service, pass_turn_service, accuse_service
-from core.schemas import Movement, Acusse, RollDice, Message, DataAccuse, PlayerBox, GamePlayer, \
-    SuspectResponse, Suspect
+    enclosure_exit_service, suspect_response_service, move_player_service, pass_turn_service, accuse_service
+from core.schemas import Movement, Acusse, RollDice, PlayerBox, GamePlayer, SuspectResponse, Suspect
 
 
 shifts_router = APIRouter()
@@ -29,8 +26,8 @@ async def suspect(suspect_input: Suspect):
     await suspect_service(suspect_input)
 
 
-@shifts_router.put("/suspectResponse")
-async def suspect_response(response: SuspectResponse):
+@shifts_router.put("/send_suspect_card")
+async def send_suspect_card(response: SuspectResponse):
     return await suspect_response_service(response)
 
 
