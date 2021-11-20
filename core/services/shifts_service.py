@@ -1,4 +1,5 @@
 import json
+from logging import Logger
 
 from uuid import UUID
 
@@ -7,9 +8,10 @@ from pony.orm import ObjectNotFound
 from core import logger, LiveGameRoom, get_live_game_room
 from core.repositories import get_adjacent_boxes, get_adj_special_box, is_trap, find_player_by_id_and_game_id, \
     update_current_position, find_player_by_id, get_card_info_by_id, find_four_traps, set_loser, enter_enclosure, \
-    find_game_by_id, find_player_by_turn, get_game_players_count, exit_enclosure, pass_shift
+    find_game_by_id, find_player_by_turn, get_game_players_count, exit_enclosure, pass_shift, \
+    find_player_enclosure, is_player_card
 from core.schemas import Movement, RollDice, PlayerBox, GamePlayer, DataRoll, Acusse, \
-    DataSuspectNotice, DataSuspectRequest, SuspectResponse, DataSuspectResponse
+    DataSuspectNotice, SuspectResponse, DataSuspectResponse, Suspect
 from core.exceptions import MysteryException
 from core.services import valid_is_started, is_valid_game_player_service
 from core.schemas.player_schema import BasicGameInput
@@ -101,6 +103,11 @@ def valid_cards(accuse: Acusse):
     valid_card("VICTIM", accuse.victim_id)
 
 
+def valid_cards_suspect(suspect: Suspect):
+    valid_card("MONSTER", suspect.monster_id)
+    valid_card("VICTIM", suspect.victim_id)
+
+
 def get_player_reached(game_id, suspect_cards):
     game = find_game_by_id(game_id)
     players_len = get_game_players_count(game_id)
@@ -115,22 +122,27 @@ def get_player_reached(game_id, suspect_cards):
     return reached_player
 
 
-async def suspect_service(suspect: Acusse):
-    valid_cards(suspect)
+async def suspect_service(suspect: Suspect):
+    is_valid_game_player_service(suspect.game_id, suspect.player_id)
+    valid_cards_suspect(suspect)
     valid_is_started(suspect.game_id)
-    suspect_cards = [suspect.enclosure_id, suspect.monster_id, suspect.victim_id]
+    enclosure_id = valid_player_enclosure(suspect.player_id)
+    suspect_cards = [enclosure_id, suspect.monster_id, suspect.victim_id]
     player_id = get_player_reached(suspect.game_id, suspect_cards)
     room: LiveGameRoom = get_live_game_room(suspect.game_id)
     data = DataSuspectNotice(player_id=suspect.player_id, reached_player_id=player_id,
-                             enclosure_id=suspect.enclosure_id, monster_id=suspect.monster_id,
+                             enclosure_id=enclosure_id, monster_id=suspect.monster_id,
                              victim_id=suspect.victim_id, game_id=suspect.game_id)
     await room.broadcast_json_message("SUSPECT", json.loads(data.json()))
 
 
 async def suspect_response_service(response: SuspectResponse):
+    is_valid_game_player_service(response.game_id, response.from_player)
+    is_valid_game_player_service(response.game_id, response.to_player)
+    valid_is_player_card(response.from_player, response.card)
     room: LiveGameRoom = get_live_game_room(response.game_id)
     data = DataSuspectResponse(card=response.card)
-    await room.message_to_player(response.player_id, "SUSPECT_RESPONSE", json.loads(data.json()))
+    await room.message_to_player(response.to_player, "SUSPECT_RESPONSE", json.loads(data.json()))
     return "SUSPECT_RESPONSE_SENDED"
 
 
@@ -178,3 +190,18 @@ async def pass_turn_service(player_game: BasicGameInput):
         await room.broadcast_json_message("ASSIGN_SHIFT", json.loads(game_player.json()))
     except AssertionError:
         raise MysteryException(message="Invalid movement", status_code=400)
+
+def valid_player_enclosure(player_id):
+    try:
+        enclosure_id = find_player_enclosure(player_id)
+        logger.info(enclosure_id)
+        return enclosure_id
+    except AssertionError:
+        raise MysteryException(message="Player is not in enclosure", status_code=400)
+
+
+def valid_is_player_card(player_id, card_id):
+    try:
+        is_player_card(player_id, card_id)
+    except AssertionError:
+        raise MysteryException(message="The player is not showing a card of her own")

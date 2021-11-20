@@ -107,3 +107,16 @@ def find_next_available_player(player_in_shift: Player):
         next_turn: int = get_next_turn(current_turn, max_turn_value)
         next_player = next(filter(lambda p: p.order == next_turn, available_players), None)
     return next_player
+
+@db_session
+def find_player_enclosure(player_id):
+    player: Player = find_player_by_id(player_id)
+    assert player.enclosure != None
+    return player.enclosure.id
+
+
+@db_session
+def is_player_card(player_id,card_id):
+    player: Player = find_player_by_id(player_id)
+    cards = list(map(lambda x: x.id, player.cards))
+    assert card_id in cards
