@@ -3,10 +3,10 @@ from starlette.responses import Response
 from starlette.status import HTTP_204_NO_CONTENT
 
 from core.schemas.games_schema import BasicGameInput
-from core.settings import logger, get_live_game_room
-from core.services import set_loser_service, suspect_service, \
-    roll_dice_service, enclosure_enter_service, enclosure_exit_service, suspect_response_service, valid_cards, \
-    move_player_service, get_envelop, valid_is_started, pass_turn_service
+from core.settings import logger
+from core.services import suspect_service, roll_dice_service, enclosure_enter_service, \
+    enclosure_exit_service, suspect_response_service, valid_cards, \
+    move_player_service, pass_turn_service, accuse_service
 from core.schemas import Movement, Acusse, RollDice, Message, DataAccuse, PlayerBox, GamePlayer, \
     SuspectResponse, Suspect
 
@@ -19,35 +19,17 @@ async def move_player(movement: Movement):
     return await move_player_service(movement)
 
 
-@shifts_router.post("/accuse")
-def accuse(accuse_input: Acusse):
-    valid_cards(accuse_input)
-    valid_is_started(accuse_input.game_id)
-    envelope = get_envelop(accuse_input.game_id)
-    logger.info(envelope)
-    accuse = [accuse_input.enclosure_id, accuse_input.monster_id, accuse_input.victim_id]
-    player_id = accuse_input.player_id
-    r = set(envelope).difference(accuse)
-    if len(r) == 0:
-        data = DataAccuse(player_id=player_id, result=True, cards=envelope)
-        message = Message(type="Accuse", data=data)
-    else:
-        data = DataAccuse(player_id=player_id, result=False, cards=accuse)
-        message = Message(type="Accuse", data=data)
-        set_loser_service(player_id)
-
-    wb = get_live_game_room(accuse_input.game_id)
-    wb.broadcast_message(message)
-
-    return message
+@shifts_router.put("/accuse")
+async def accuse(accuse_input: Acusse):
+    return await accuse_service(accuse_input)
 
 
-@shifts_router.post("/suspect")
+@shifts_router.put("/suspect")
 async def suspect(suspect_input: Suspect):
     await suspect_service(suspect_input)
 
 
-@shifts_router.post("/suspectResponse")
+@shifts_router.put("/suspectResponse")
 async def suspect_response(response: SuspectResponse):
     return await suspect_response_service(response)
 

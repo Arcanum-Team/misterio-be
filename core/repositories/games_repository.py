@@ -181,6 +181,8 @@ def find_valid_player(game_id, player_id):
     player: Player = next(filter(lambda p: p.id == player_id, game.players), None)
     if not player:
         raise MysteryException(message="Player Not found!", status_code=404)
+    if player.loser:
+        raise MysteryException(message="Player have lost", status_code=404)
     return player
 
 

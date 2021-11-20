@@ -11,9 +11,9 @@ from core.repositories import get_adjacent_boxes, get_adj_special_box, is_trap, 
     find_game_by_id, find_player_by_turn, get_game_players_count, exit_enclosure, pass_shift, \
     find_player_enclosure, is_player_card
 from core.schemas import Movement, RollDice, PlayerBox, GamePlayer, DataRoll, Acusse, \
-    DataSuspectNotice, SuspectResponse, DataSuspectResponse, Suspect
+    DataSuspectNotice, SuspectResponse, DataSuspectResponse, Suspect, DataAccuse
 from core.exceptions import MysteryException
-from core.services import valid_is_started, is_valid_game_player_service
+from core.services import valid_is_started, is_valid_game_player_service, get_envelop, valid_is_started
 from core.schemas.player_schema import BasicGameInput
 
 
@@ -91,11 +91,7 @@ def find_player_pos_service(player_id):
     position_box = player.current_position
     box = position_box.id
     return box
-
-
-def set_loser_service(player_id):
-    set_loser(player_id)
-
+    
 
 def valid_cards(accuse: Acusse):
     valid_card("ENCLOSURE", accuse.enclosure_id)
@@ -190,6 +186,29 @@ async def pass_turn_service(player_game: BasicGameInput):
         await room.broadcast_json_message("ASSIGN_SHIFT", json.loads(game_player.json()))
     except AssertionError:
         raise MysteryException(message="Invalid movement", status_code=400)
+
+
+async def accuse_service(accuse: Acusse):
+    valid_cards(accuse)
+    valid_is_started(accuse.game_id)
+    is_valid_game_player_service(accuse.game_id, accuse.player_id)
+    envelope = get_envelop(accuse.game_id)
+    logger.info(envelope)
+    accuse_cards = [accuse.enclosure_id, accuse.monster_id, accuse.victim_id]
+    player_id = accuse.player_id
+    r = set(envelope).difference(accuse_cards)
+    if len(r) == 0:
+        data = DataAccuse(player_id=player_id, result=True, cards=envelope,
+        game_id=accuse.game_id)
+    else:
+        data = DataAccuse(player_id=player_id, result=False, cards=accuse_cards, 
+        game_id=accuse.game_id)
+        set_loser(player_id)
+
+    wb = get_live_game_room(accuse.game_id)
+    await wb.broadcast_json_message("ACCUSE", json.loads(data.json()))
+    return data
+
 
 def valid_player_enclosure(player_id):
     try:
