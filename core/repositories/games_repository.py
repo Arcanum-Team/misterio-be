@@ -101,7 +101,8 @@ def start_game_and_set_player_order(game_id, player_id):
     cards_id_list.remove(random_mystery_monster)
     cards_id_list.remove(random_mystery_victim)
     cards_id_list.remove(random_mystery_enclosure)
-
+    cards_id_list.append(21)  # ADD WITCH CARD
+    random.shuffle(cards_id_list)  # Mix Cards
     game.envelop = envelop
 
     players: Dict[int, List[Card]] = {}
@@ -115,18 +116,26 @@ def start_game_and_set_player_order(game_id, player_id):
         entries.remove(box)
         players[player.id] = list()
 
+    player_with_witch = None
     # Distribute rest of cards
     while len(cards_id_list) > 0:
-        for value in players.values():
+        for key, value in players.items():
             card_id = random.choice(cards_id_list)
-            value.append(get_card_by_id(card_id))
+            if card_id == 21:
+                player_with_witch = key
+            else:
+                value.append(get_card_by_id(card_id))
             cards_id_list.remove(card_id)
             if len(cards_id_list) == 0:
                 break
-
+    print("============")
+    print(player_with_witch)
+    print("============")
     for key, value in players.items():
         player: Player = next(filter(lambda p: p.id == key, game.players))
         player.cards = value
+        if key == player_with_witch:
+            player.witch = True
 
     player_count = len(game.players)
     random_list = random.sample(range(1, player_count + 1), player_count)

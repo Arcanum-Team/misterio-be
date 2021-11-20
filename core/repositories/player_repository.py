@@ -72,7 +72,8 @@ def exit_enclosure(player_id, box_id):
 
 @db_session
 def player_to_player_output(player):
-    output: PlayerOutput = PlayerOutput(id=player.id, nickname=player.nickname, host=player.host, order=player.order)
+    output: PlayerOutput = PlayerOutput(id=player.id, nickname=player.nickname, host=player.host, order=player.order,
+                                        witch=player.witch)
     if player.current_position:
         output.current_position = BoxOutput(id=player.current_position.id, attribute=player.current_position.type.value)
     if player.enclosure:
@@ -108,6 +109,7 @@ def find_next_available_player(player_in_shift: Player):
         next_player = next(filter(lambda p: p.order == next_turn, available_players), None)
     return next_player
 
+
 @db_session
 def find_player_enclosure(player_id):
     player: Player = find_player_by_id(player_id)
@@ -116,7 +118,7 @@ def find_player_enclosure(player_id):
 
 
 @db_session
-def is_player_card(player_id,card_id):
+def is_player_card(player_id, card_id):
     player: Player = find_player_by_id(player_id)
     cards = list(map(lambda x: x.id, player.cards))
     assert card_id in cards
