@@ -6,9 +6,8 @@ from core import logger
 from core.models import Card, Box, Player, Game
 from core.repositories import get_boxes_by_type, get_card_by_id, get_cards
 from core.exceptions import MysteryException
-from core.schemas import PlayerOutput, GameOutput, GameListPlayers, GamePlayer, BoxOutput
-from core.schemas.player_schema import GameInDB
-from core.repositories.player_repository import player_to_player_output
+from core.schemas import PlayerOutput, GameOutput, GameListPlayers, GamePlayer
+from core.repositories.player_repository import player_to_player_output, find_player_by_id, find_next_available_player
 
 
 @db_session
@@ -159,16 +158,14 @@ def find_complete_game(id):
 
 
 @db_session
-def pass_turn(game_id):
-    game = find_game_by_id(game_id)
-    t = 1
-    if not game.started:
-        raise MysteryException(message="Game isnt started yet!", status_code=400)
-
-    if game.turn < len(game.players):
-        t = game.turn + 1
-    game.turn = t
-    return GameOutput.from_orm(game)
+def pass_shift(player_id):
+    player: Player = find_player_by_id(player_id)
+    if not player.game.started:
+        raise MysteryException(message="Game is not started yet!", status_code=400)
+    assert player.order == player.game.turn
+    next_player: Player = find_next_available_player(player)
+    next_player.game.turn = next_player.order
+    return GamePlayer(game=GameOutput.from_orm(next_player.game), player=player_to_player_output(next_player))
 
 
 @db_session

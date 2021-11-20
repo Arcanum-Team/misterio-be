@@ -4,12 +4,12 @@ from typing import List
 from uuid import UUID
 
 from fastapi import APIRouter
-from pony.orm import TransactionIntegrityError, ObjectNotFound
+from pony.orm import TransactionIntegrityError
 
 from core import logger
 from core.exceptions import MysteryException
-from core.repositories import get_games, new_game, pass_turn
-from core.schemas import NewGame, GameJoin, GameOutput, GamePassTurn, GameListPlayers, GamePlayer
+from core.repositories import get_games, new_game
+from core.schemas import NewGame, GameJoin, GameListPlayers, GamePlayer
 from core.schemas.games_schema import GameBasicInfo, BasicGameInput
 from core.services import start_new_game, find_game_hide_player_id, join_player
 
@@ -53,13 +53,5 @@ def get_all_available_games():
 async def start_created_game(game: BasicGameInput):
     return await start_new_game(game)
 
-
-@games_router.put("/pass_turn", response_model=GameOutput)
-def pass_game_turn(game: GamePassTurn):
-    try:
-        return pass_turn(game.game_id)
-    except ObjectNotFound:
-        logger.error("Game not found [%s]", game.game_id)
-        raise MysteryException(message="Game not found!", status_code=404)
 
 
