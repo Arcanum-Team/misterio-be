@@ -190,3 +190,7 @@ def valid_is_player_card(player_id, card_id):
         is_player_card(player_id, card_id)
     except AssertionError:
         raise MysteryException(message="The player is not showing a card of her own")
+
+
+async def execute_witch_service(player_game: BasicGameInput):
+    pass
