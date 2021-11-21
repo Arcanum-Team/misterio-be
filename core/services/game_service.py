@@ -40,7 +40,7 @@ async def start_new_game(game: BasicGameInput):
     try:
         game_players: GameListPlayers = start_game_and_set_player_order(game.game_id, game.player_id)
         room: LiveGameRoom = get_live_game_room(game.game_id)
-        await room.broadcast_json_message("START_GAME", json.loads(game_players.json()))
+       # await room.broadcast_json_message("START_GAME", json.loads(game_players.json()))
         return game_players
     except ObjectNotFound:
         logger.error("Game not found [{}]".format(game.game_id))
