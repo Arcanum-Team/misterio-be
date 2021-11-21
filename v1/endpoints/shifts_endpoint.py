@@ -4,11 +4,17 @@ from starlette.status import HTTP_204_NO_CONTENT
 
 from core.schemas.games_schema import BasicGameInput
 from core.services import suspect_service, roll_dice_service, enclosure_enter_service, \
-    enclosure_exit_service, suspect_response_service, move_player_service, pass_turn_service, accuse_service
+    enclosure_exit_service, suspect_response_service, move_player_service, pass_turn_service, accuse_service, \
+    execute_witch_service
 from core.schemas import Movement, Acusse, RollDice, PlayerBox, GamePlayer, SuspectResponse, Suspect
 
 
 shifts_router = APIRouter()
+
+
+@shifts_router.put("/execute_witch")
+async def move_player(player_game: BasicGameInput):
+    return await execute_witch_service(player_game)
 
 
 @shifts_router.put("/move")
