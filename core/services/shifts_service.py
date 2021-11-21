@@ -1,9 +1,13 @@
 import json
+import random
 
 from uuid import UUID
 
 from pony.orm import ObjectNotFound
 
+from core.schemas import GameOutput
+from core.repositories.player_repository import player_to_player_output
+from core.models import Player
 from core import logger, LiveGameRoom, get_live_game_room
 from core.repositories import get_adjacent_boxes, get_adj_special_box, is_trap, find_player_by_id_and_game_id, \
     update_current_position, find_player_by_id, get_card_info_by_id, find_four_traps, set_loser, enter_enclosure, \
@@ -207,4 +211,13 @@ def valid_is_player_card(player_id, card_id):
 
 
 async def execute_witch_service(player_game: BasicGameInput):
-    pass
+    logger.info(player_game)
+    player: Player = is_valid_game_player_service(player_game.game_id, player_game.player_id) 
+    if not player.witch: 
+        raise MysteryException(message="Player doesn't have the witch card!", status_code=400) 
+    room: LiveGameRoom = get_live_game_room(player_game.game_id)
+    card=random.choice(player.game.envelop).json()
+
+    await room.message_to_player("SHOW_CARD", player.id, json.loads(card))
+    player.witch = False
+    return GamePlayer(game=GameOutput.from_orm(player_game.game_id), player=player_to_player_output(player))
