@@ -16,6 +16,11 @@ class Acusse(BasicGameInput):
     enclosure_id: int
 
 
+class Suspect(BasicGameInput):
+    monster_id: int
+    victim_id: int
+
+
 class RollDice(BaseModel):
     game_id: UUID
     player_id: UUID
@@ -24,5 +29,6 @@ class RollDice(BaseModel):
 
 class SuspectResponse(BaseModel):
     game_id: UUID
-    player_id: UUID
+    from_player: UUID
+    to_player: UUID
     card: int

@@ -6,7 +6,7 @@ from core import logger
 from core.models import Card, Box, Player, Game
 from core.repositories import get_boxes_by_type, get_card_by_id, get_cards
 from core.exceptions import MysteryException
-from core.schemas import PlayerOutput, GameOutput, GameListPlayers, GamePlayer
+from core.schemas import PlayerOutput, GameOutput, GameListPlayers, GamePlayer, Suspect, DataSuspectNotice
 from core.repositories.player_repository import player_to_player_output, find_player_by_id, find_next_available_player
 
 
@@ -106,7 +106,8 @@ def start_game_and_set_player_order(game_id, player_id):
     cards_id_list.remove(random_mystery_monster)
     cards_id_list.remove(random_mystery_victim)
     cards_id_list.remove(random_mystery_enclosure)
-
+    cards_id_list.append(21)  # ADD WITCH CARD
+    random.shuffle(cards_id_list)  # Mix Cards
     game.envelop = envelop
 
     players: Dict[int, List[Card]] = {}
@@ -120,11 +121,15 @@ def start_game_and_set_player_order(game_id, player_id):
         entries.remove(box)
         players[player.id] = list()
 
+    player_with_witch = None
     # Distribute rest of cards
     while len(cards_id_list) > 0:
-        for value in players.values():
+        for key, value in players.items():
             card_id = random.choice(cards_id_list)
-            value.append(get_card_by_id(card_id))
+            if card_id == 21:
+                player_with_witch = key
+            else:
+                value.append(get_card_by_id(card_id))
             cards_id_list.remove(card_id)
             if len(cards_id_list) == 0:
                 break
@@ -132,6 +137,8 @@ def start_game_and_set_player_order(game_id, player_id):
     for key, value in players.items():
         player: Player = next(filter(lambda p: p.id == key, game.players))
         player.cards = value
+        if key == player_with_witch:
+            player.witch = True
 
     player_count = len(game.players)
     random_list = random.sample(range(1, player_count + 1), player_count)
@@ -163,11 +170,8 @@ def find_complete_game(id):
 
 
 @db_session
-def pass_shift(player_id):
-    player: Player = find_player_by_id(player_id)
-    if not player.game.started:
-        raise MysteryException(message="Game is not started yet!", status_code=400)
-    assert player.order == player.game.turn
+def pass_shift(game_id, player_id):
+    player: Player = find_player_game_started_in_turn(game_id, player_id)
     next_player: Player = find_next_available_player(player)
     next_player.game.turn = next_player.order
     return GamePlayer(game=GameOutput.from_orm(next_player.game), player=player_to_player_output(next_player))
@@ -190,15 +194,44 @@ def find_valid_player(game_id, player_id):
 
 
 @db_session
-def find_player_by_turn(game_id, turn):
-    game = find_game_by_id(game_id)
-    res = None
-    for player in game.players:
-        if player.order == turn:
-            res = player
-    cards = list(map(lambda x: x.id, res.cards))
+def find_player_game_started_in_turn(game_id, player_id):
+    player: Player = find_valid_player(game_id, player_id)
 
-    return res.id, cards
+    if not player.game.started:
+        raise MysteryException(message="Game Not started!", status_code=400)
+
+    if player.order != player.game.turn:
+        raise MysteryException(message="Player Not turn!", status_code=400)
+
+    return player
+
+
+@db_session
+def get_player_reached(player, suspect_cards):
+    players_len = len(player.game.players)
+    player_turn = player.order
+    for i in range(0, players_len - 1):
+        player_found: Player = find_player_by_turn(player.game.players, (player_turn + i % players_len) + 1)
+        if len(set(map(lambda c: c.id, player_found.cards)).intersection(suspect_cards)) > 0:
+            return player_found.id
+    return None
+
+
+@db_session
+def do_suspect(suspect: Suspect):
+    player: Player = find_player_game_started_in_turn(suspect.game_id, suspect.player_id)
+    if not player.enclosure:
+        raise MysteryException(message="Player is not in enclosure!", status_code=400)
+    enclosure_id = player.enclosure.id
+    player_reached = get_player_reached(player, {enclosure_id, suspect.monster_id, suspect.victim_id})
+    return DataSuspectNotice(player_id=suspect.player_id, reached_player_id=player_reached,
+                             enclosure_id=enclosure_id, monster_id=suspect.monster_id,
+                             victim_id=suspect.victim_id, game_id=suspect.game_id)
+
+
+@db_session
+def find_player_by_turn(players, turn):
+    return next(filter(lambda p: p.order == turn, players), None)
 
 
 @db_session

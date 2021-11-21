@@ -11,6 +11,7 @@ class Player(db.Entity):
     game = Required(Game)
     host = Required(bool, default=False)
     loser = Required(bool, default=False)
+    witch = Required(bool, default=False)
     order = Optional(int)
     cards = Set('Card')
     color = Optional(str)
