@@ -8,7 +8,7 @@ from core.repositories import get_boxes_by_type, get_card_by_id, get_cards
 from core.exceptions import MysteryException
 from core.schemas import PlayerOutput, GameOutput, GameListPlayers, GamePlayer, Suspect, DataSuspectNotice, Acusse, \
     DataAccuse
-from core.repositories.player_repository import player_to_player_output, find_player_by_id, find_next_available_player, \
+from core.repositories.player_repository import player_to_player_output, find_next_available_player, \
     find_available_players_without_me, get_next_turn
 
 
@@ -131,9 +131,9 @@ def start_game_and_set_player_order(game_id, player_id):
                 player_with_witch = key
             else:
                 value.append(get_card_by_id(card_id))
-            cards_id_list.remove(card_id)
-            if len(cards_id_list) == 0:
-                break
+                cards_id_list.remove(card_id)
+                if len(cards_id_list) == 0:
+                    break
 
     for key, value in players.items():
         player: Player = next(filter(lambda p: p.id == key, game.players))
