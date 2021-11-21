@@ -24,8 +24,8 @@ def get_game_by_name(name):
 def new_game(game):
     g = Game(name=game.game_name)
     player = Player(nickname=game.nickname, game=g, host=True)
-    return GamePlayer(game=game_to_game_output(g),
-                      player=player_to_player_output(player))
+    return GamePlayer(game=game_to_game_output(g),      
+                    player=player_to_player_output(player))
 
 
 @db_session
@@ -66,7 +66,7 @@ def join_player_to_game(game_join):
     p = Player(nickname=game_join.nickname, game=g, host=False)
 
     return GamePlayer(game=game_to_game_output(g),
-                      player=player_to_player_output(p))
+                    player=player_to_player_output(p))
 
 
 @db_session
@@ -84,7 +84,7 @@ def start_game_and_set_player_order(game_id, player_id):
     if len(game.players) < 2:
         raise MysteryException(message="Game needs more join players!", status_code=400)
 
-    # START SET INITIAL GAME
+# START SET INITIAL GAME
     game.started = True
     game.turn = 1
 
@@ -109,15 +109,15 @@ def start_game_and_set_player_order(game_id, player_id):
 
     entries: List[Box] = list(get_boxes_by_type("ENTRY"))
 
-    # Initialize players dict and set
+# Initialize players dict and set
     for player in game.players:
         box = random.choice(entries)
         player.current_position = box
         entries.remove(box)
         players[player.id] = list()
-
+    
     player_with_witch = None
-    # Distribute rest of cards
+# Distribute rest of cards
     while len(cards_id_list) > 0:
         for key, value in players.items():
             card_id = random.choice(cards_id_list)
@@ -125,9 +125,9 @@ def start_game_and_set_player_order(game_id, player_id):
                 player_with_witch = key
             else:
                 value.append(get_card_by_id(card_id))
-            cards_id_list.remove(card_id)
-            if len(cards_id_list) == 0:
-                break
+                cards_id_list.remove(card_id)
+                if len(cards_id_list) == 0:
+                    break
 
     for key, value in players.items():
         player: Player = next(filter(lambda p: p.id == key, game.players))
@@ -141,7 +141,7 @@ def start_game_and_set_player_order(game_id, player_id):
     for player in game.players:
         player.order = random_list.pop(0)
 
-    # END SET INITIAL GAME
+# END SET INITIAL GAME
 
     game_output = GameOutput.from_orm(game)
     game_output.player_count = player_count
@@ -207,8 +207,8 @@ def get_player_reached(player, suspect_cards):
     player_turn = player.order
     for i in range(0, players_len - 1):
         player_found: Player = find_player_by_turn(player.game.players, (player_turn + i % players_len) + 1)
-        if len(set(map(lambda c: c.id, player_found.cards)).intersection(suspect_cards)) > 0:
-            return player_found.id
+    if len(set(map(lambda c: c.id, player_found.cards)).intersection(suspect_cards)) > 0:
+        return player_found.id
     return None
 
 
@@ -220,8 +220,8 @@ def do_suspect(suspect: Suspect):
     enclosure_id = player.enclosure.id
     player_reached = get_player_reached(player, {enclosure_id, suspect.monster_id, suspect.victim_id})
     return DataSuspectNotice(player_id=suspect.player_id, reached_player_id=player_reached,
-                             enclosure_id=enclosure_id, monster_id=suspect.monster_id,
-                             victim_id=suspect.victim_id, game_id=suspect.game_id)
+                            enclosure_id=enclosure_id, monster_id=suspect.monster_id, 
+                            victim_id=suspect.victim_id, game_id=suspect.game_id)
 
 
 @db_session
