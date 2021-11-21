@@ -15,12 +15,6 @@ class DataSuspectNotice(DataMessage):
     enclosure_id: int
 
 
-class DataSuspectRequest(DataMessage):
-    monster_id: int
-    victim_id: int
-    enclosure_id: int
-
-
 class DataSuspectResponse(BaseModel):
     card: Optional[int]
 

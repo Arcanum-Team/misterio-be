@@ -35,6 +35,7 @@ class PlayerOutput(BaseModel):
     id: UUID
     nickname: str
     order: Optional[int]
+    witch: bool
     host: bool
     current_position: Optional[BoxOutput]
     enclosure: Optional[EnclosureOutput]
