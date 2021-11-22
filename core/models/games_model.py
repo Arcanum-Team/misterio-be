@@ -10,4 +10,4 @@ class Game(db.Entity):
     turn = Optional(int)
     envelop = Required(IntArray, default=[])
     players = Set('Player')
-    in_enclosure=Optional(bool, default=False)
+    password= Optional(str, max_len=10)
