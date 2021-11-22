@@ -200,5 +200,5 @@ async def execute_witch_service(player_game: BasicGameInput):
     logger.info(player_game)
     card = execute_witch(player_game)
     room: LiveGameRoom = get_live_game_room(player_game.game_id)
-    await room.broadcast_json_message("PLAYER_USE_WITCH_CARD", {"player_id": player_game.player_id})
+    await room.broadcast_json_message("PLAYER_USE_WITCH_CARD", {"player_id": str(player_game.player_id)})
     return {"card": card}
