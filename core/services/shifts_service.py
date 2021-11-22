@@ -126,7 +126,7 @@ async def roll_dice_service(roll: RollDice):
     possible_boxes = get_possible_movement(roll.dice, pos)
     room: LiveGameRoom = get_live_game_room(roll.game_id)
     data = DataRoll(game_id=roll.game_id, player_id=roll.player_id, dice=roll.dice)
-    await room.broadcast_json_message("VALUE_DICE", json.loads(data.json()))
+    #await room.broadcast_json_message("VALUE_DICE", json.loads(data.json()))
     return possible_boxes
 
 
@@ -140,7 +140,7 @@ async def enclosure_enter_service(player_game: BasicGameInput):
     try:
         game_player: GamePlayer = enter_enclosure(player_game.player_id)
         room: LiveGameRoom = get_live_game_room(player_game.game_id)
-        await room.broadcast_json_message("ENCLOSURE_ENTER", json.loads(game_player.json()))
+        #await room.broadcast_json_message("ENCLOSURE_ENTER", json.loads(game_player.json()))
         return game_player
     except AssertionError:
         raise MysteryException(message="Invalid movement", status_code=400)

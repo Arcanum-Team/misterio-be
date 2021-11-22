@@ -18,7 +18,7 @@ from core.schemas.card_schema import CardBasicInfo
 #shift
 from core.repositories.games_repository import find_player_by_turn
 from v1.endpoints.shifts_endpoint import shifts_router
-from core.models.board_model import Enclosure
+from core.models.board_model import Enclosure, Box
 
 game_info= {}
 player2_id= ''
@@ -397,8 +397,49 @@ def test_put_send_suspect_card():
     )
     assert response.status_code == 200
 
+def test_put_roll_dice():
+    global game_info
+    response = shift_client.put("/roll-dice",
+    headers={'accept': 'application/json',
+        'Content-Type': 'application/json'},
+    json= {
+        "game_id": str(game_info["game"]["id"]),
+        "player_id": str(game_info["player"]["id"]),
+        "dice":  6
+        }
+    )
+    assert response.status_code == 200
 
 
+def test_put_enclosure_enter():
+    global game_info
+    with db_session:
+        player= find_player_by_id(game_info["player"]["id"])
+        player.current_position= Box[45]
+    response = shift_client.put("/enclosure/enter",
+    headers={'accept': 'application/json',
+        'Content-Type': 'application/json'},
+    json= {
+        "game_id": str(game_info["game"]["id"]),
+        "player_id": str(game_info["player"]["id"])
+        }
+    )
+    assert response.status_code == 200
+
+'''
+def test_put_enclosure_exit():
+    global game_info
+    response = shift_client.put("/enclosure/exit",
+    headers={'accept': 'application/json',
+        'Content-Type': 'application/json'},
+    json= {
+        "game_id": str(game_info["game"]["id"]),
+        "player_id": str(game_info["player"]["id"]),
+        "box_id": 80
+        }
+    )
+    assert response.status_code == 200
+'''
 
 '''
 def test_put_games_pass_turn():
