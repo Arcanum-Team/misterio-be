@@ -6,8 +6,10 @@ from core import logger
 from core.models import Card, Box, Player, Game
 from core.repositories import get_boxes_by_type, get_card_by_id, get_cards
 from core.exceptions import MysteryException
-from core.schemas import PlayerOutput, GameOutput, GameListPlayers, GamePlayer, Suspect, DataSuspectNotice
-from core.repositories.player_repository import player_to_player_output, find_player_by_id, find_next_available_player
+from core.schemas import PlayerOutput, GameOutput, GameListPlayers, GamePlayer, Suspect, DataSuspectNotice, Acusse, \
+    DataAccuse
+from core.repositories.player_repository import player_to_player_output, find_player_by_id, find_next_available_player, \
+    find_available_players_without_me
 
 
 @db_session
@@ -227,6 +229,31 @@ def do_suspect(suspect: Suspect):
     return DataSuspectNotice(player_id=suspect.player_id, reached_player_id=player_reached,
                              enclosure_id=enclosure_id, monster_id=suspect.monster_id,
                              victim_id=suspect.victim_id, game_id=suspect.game_id)
+
+
+@db_session
+def do_accuse(accuse: Acusse):
+    player: Player = find_player_game_started_in_turn(accuse.game_id, accuse.player_id)
+    envelop = player.game.envelop
+    accuse_cards = {accuse.enclosure_id, accuse.monster_id, accuse.victim_id}
+    if len(set(envelop).difference(accuse_cards)) == 0:
+        player_output = player_to_player_output(player)
+        return DataAccuse(player=player_output,
+                          game=game_to_game_output(player.game),
+                          player_win=player_output,
+                          cards=envelop,
+                          )
+    else:
+        next_player = player_to_player_output(find_next_available_player(player))
+        player.loser = True
+        player.game.turn = next_player.order
+        data_accuse = DataAccuse(player=player_to_player_output(player), game=game_to_game_output(player.game),
+                                 cards=accuse_cards)
+        if len(find_available_players_without_me(player)) == 1:
+            data_accuse.player_win = next_player
+        else:
+            data_accuse.next_player_turn = next_player
+        return data_accuse
 
 
 @db_session

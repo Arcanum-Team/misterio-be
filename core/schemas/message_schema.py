@@ -2,6 +2,8 @@ from typing import List, Optional
 from uuid import UUID
 from pydantic.main import BaseModel
 
+from core.schemas.player_schema import PlayerOutput, GamePlayer
+
 
 class DataMessage(BaseModel):
     player_id: UUID
@@ -19,9 +21,10 @@ class DataSuspectResponse(BaseModel):
     card: Optional[int]
 
 
-class DataAccuse(DataMessage):
-    result: bool
+class DataAccuse(GamePlayer):
     cards: List[int]
+    player_win: Optional[PlayerOutput]
+    next_player_turn: Optional[PlayerOutput]
 
 
 class DataRoll(DataMessage):
