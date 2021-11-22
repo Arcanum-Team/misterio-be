@@ -1,28 +1,34 @@
 from uuid import UUID
-from core.exceptions import MysteryException
-from pydantic import BaseModel, Field, validator
+
+from pydantic import Field, BaseModel
+
+from core.schemas.games_schema import BasicGameInput
 
 
-class Movement(BaseModel):
-    game_id: UUID
-    player_id: UUID
+class Movement(BasicGameInput):
     next_box_id: int = Field(ge=1, le=80)
     dice_value: int = Field(ge=1, le=6)
 
-class Acusse(BaseModel):
-    game_id: UUID
-    player_id: UUID
+
+class Acusse(BasicGameInput):
     monster_id: int
     victim_id: int
     enclosure_id: int
 
 
+class Suspect(BasicGameInput):
+    monster_id: int
+    victim_id: int
+
+
 class RollDice(BaseModel):
     game_id: UUID
     player_id: UUID
-    dice: int
+    dice: int = Field(ge=1, le=6)
 
-    @validator('dice')
-    def dice_range(cls, d):
-        if d not in range(7):
-            raise MysteryException(message="Dice not in correct range", status_code=400)
+
+class SuspectResponse(BaseModel):
+    game_id: UUID
+    from_player: UUID
+    to_player: UUID
+    card: int

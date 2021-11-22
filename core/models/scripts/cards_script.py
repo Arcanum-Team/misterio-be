@@ -4,13 +4,13 @@ from core.models.card_model import Card
 from core.repositories import get_cards
 
 cards: Dict[str, List[str]] = {
-    "ENCLOSURE": ["GARAGE", "BEDROOM", "LIBRARY", "LOBBY", "PANTHEON", "CELLAR",
-                  "LIVING_ROOM", "LABORATORY"],  # 8
+    "ENCLOSURE": ["COCHERA", "ALCOBA", "BIBLIOTECA", "VESTIBULO", "PANTEON", "BODEGA",
+                  "SALON", "LABORATORIO"],  # 8
 
     "MONSTER": ["DRACULA", "FRANKENSTEIN", "HOMBRE LOBO", "FANTASMA",
-                "MOMIA", "DR.JEKYLL MR.HYDE"],  # 14
+                "MOMIA", "DR. JEKYLL MR. HYDE"],  # 14
 
-    "VICTIM": ["CONDE", "CONDESA", "AMA DE LLAVES", "MOYORDOMO", "DONCELLA", "JARDINERO"]  # 20
+    "VICTIM": ["CONDE", "CONDESA", "AMA DE LLAVES", "MAYORDOMO", "DONCELLA", "JARDINERO"]  # 20
 }
 
 

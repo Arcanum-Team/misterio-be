@@ -1,23 +1,14 @@
-from enum import Enum
-from typing import Optional
+from typing import Optional, List
 from uuid import UUID
 
+from pydantic import Field
 from pydantic.main import BaseModel
 
-
-class Position(Enum):
-    ONE = 1
-    TWO = 2
-    THREE = 3
-    FOUR = 4
-    FIVE = 5
-    SIX = 6
+from core.schemas.games_schema import BasicGameInput, GameOutput
 
 
-class PlayerOrder(BaseModel):
-    player_id: UUID
-    game_id: UUID
-    order: Position
+class PlayerBox(BasicGameInput):
+    box_id: int = Field(ge=1, le=80)
 
 
 class GameInDB(BaseModel):
@@ -34,15 +25,22 @@ class BoxOutput(BaseModel):
     attribute: str
 
 
+class EnclosureOutput(BaseModel):
+    id: int
+    name: str
+    doors: Optional[List[BoxOutput]]
+
+
 class PlayerOutput(BaseModel):
     id: UUID
     nickname: str
+    order: Optional[int]
+    witch: bool
     host: bool
-    game: GameInDB
+    loser: bool
+    color: Optional[str]
     current_position: Optional[BoxOutput]
-
-    class Config:
-        orm_mode = True
+    enclosure: Optional[EnclosureOutput]
 
 
 class BasicPlayerInfo(BaseModel):
@@ -53,3 +51,13 @@ class BasicPlayerInfo(BaseModel):
 class PlayerPosition(BaseModel):
     current_position: Optional[int]
     enclosure: Optional[int]
+
+
+class GameListPlayers(BaseModel):
+    game: GameOutput
+    players: List[PlayerOutput]
+
+
+class GamePlayer(BaseModel):
+    game: GameOutput
+    player: PlayerOutput

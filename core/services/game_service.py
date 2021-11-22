@@ -1,11 +1,14 @@
+import json
 from uuid import UUID
 
 from pony.orm import ObjectNotFound
 
-from core import logger
+from core import logger, LiveGameRoom, get_live_game_room
 from core.exceptions import MysteryException
-from core.repositories import find_complete_game, start_game, find_game_by_id, join_player_to_game
-from core.schemas import GameStart, GameJoin
+from core.repositories import find_complete_game, find_game_by_id, join_player_to_game, is_valid_game_player, \
+    start_game_and_set_player_order, player_have_lost, get_player_nickname
+from core.schemas import GameJoin, GameListPlayers, DataChatMessage
+from core.schemas.player_schema import BasicGameInput
 
 
 def get_valid_game(player_id: UUID, game_id: UUID):
@@ -28,15 +31,20 @@ def find_game_by_id_service(game_id):
 
 def find_game_hide_player_id(game_id):
     game = find_game_by_id_service(game_id)
-    hide_player_id(game)
+    # hide_player_id(game)
     return game
 
 
-def start_new_game(game: GameStart):
-    game_started = start_game(game)
-    # hide_player_id(game_started)
-    game_started.players.sort(key=lambda player: player.order)
-    return game_started
+async def start_new_game(game: BasicGameInput):
+    logger.info(game)
+    try:
+        game_players: GameListPlayers = start_game_and_set_player_order(game.game_id, game.player_id)
+        room: LiveGameRoom = get_live_game_room(game.game_id)
+        await room.broadcast_json_message("START_GAME", json.loads(game_players.json()))
+        return game_players
+    except ObjectNotFound:
+        logger.error("Game not found [{}]".format(game.game_id))
+        raise MysteryException(message="Game not found!", status_code=404)
 
 
 def hide_player_id(game):
@@ -50,6 +58,29 @@ def get_envelop(game_id):
     return game.envelop
 
 
+def valid_is_started(game_id):
+    game = find_game_by_id(game_id)
+    if not game.started:
+        raise MysteryException(message="Game is not started", status_code=400)
+
+
 def join_player(game_join: GameJoin):
     return join_player_to_game(game_join)
 
+
+def is_valid_game_player_service(game_id, player_id):
+    try:
+        is_valid_game_player(game_id, player_id)
+    except ObjectNotFound:
+        raise MysteryException(message="Game not found!", status_code=404)
+
+
+async def chat_service(message):
+    is_valid_game_player_service(message.game_id, message.player_id)
+    if player_have_lost(message.player_id):
+        raise MysteryException(message="Player is not avalible to chat!", status_code=400)
+    nick = get_player_nickname(message.player_id)
+    data = DataChatMessage(game_id=message.game_id, nickname=nick, message=message.message)
+    room: LiveGameRoom = get_live_game_room(message.game_id)
+    await room.broadcast_exept_one(message.player_id, "CHAT", json.loads(data.json()))
+    return message.message
