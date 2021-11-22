@@ -269,7 +269,6 @@ def is_valid_game_player(game_id, player_id):
 
 @db_session
 def execute_witch(player_game: BasicGameInput):
-
     player: Player = find_valid_player(player_game.game_id, player_game.player_id)
 
     if not player.game.started:
