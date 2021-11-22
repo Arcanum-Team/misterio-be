@@ -8,8 +8,9 @@ from core.repositories import get_boxes_by_type, get_card_by_id, get_cards
 from core.exceptions import MysteryException
 from core.schemas import PlayerOutput, GameOutput, GameListPlayers, GamePlayer, Suspect, DataSuspectNotice, Acusse, \
     DataAccuse
-from core.repositories.player_repository import player_to_player_output, find_player_by_id, find_next_available_player, \
-    find_available_players_without_me
+from core.repositories.player_repository import player_to_player_output, find_next_available_player, \
+    find_available_players_without_me, get_next_turn
+from core.schemas.games_schema import BasicGameInput
 
 
 @db_session
@@ -100,6 +101,8 @@ def start_game_and_set_player_order(game_id, player_id):
     victims_id_list = list(map(lambda x: x.id, filter(lambda card: card.type == "VICTIM", cards)))
     monsters_id_list = list(map(lambda x: x.id, filter(lambda card: card.type == "MONSTER", cards)))
 
+    colors = ["blue", "green", "orange", "red", "white", "yellow"]
+
     random_mystery_enclosure = random.choice(enclosures_id_list)
     random_mystery_monster = random.choice(monsters_id_list)
     random_mystery_victim = random.choice(victims_id_list)
@@ -108,7 +111,6 @@ def start_game_and_set_player_order(game_id, player_id):
     cards_id_list.remove(random_mystery_victim)
     cards_id_list.remove(random_mystery_enclosure)
     cards_id_list.append(21)  # ADD WITCH CARD
-    random.shuffle(cards_id_list)  # Mix Cards
     game.envelop = envelop
 
     players: Dict[int, List[Card]] = {}
@@ -118,7 +120,10 @@ def start_game_and_set_player_order(game_id, player_id):
     # Initialize players dict and set
     for player in game.players:
         box = random.choice(entries)
+        color = random.choice(colors)
         player.current_position = box
+        player.color = color
+        colors.remove(color)
         entries.remove(box)
         players[player.id] = list()
 
@@ -127,14 +132,13 @@ def start_game_and_set_player_order(game_id, player_id):
     while len(cards_id_list) > 0:
         for key, value in players.items():
             card_id = random.choice(cards_id_list)
+            cards_id_list.remove(card_id)
             if card_id == 21:
                 player_with_witch = key
             else:
                 value.append(get_card_by_id(card_id))
-            cards_id_list.remove(card_id)
             if len(cards_id_list) == 0:
                 break
-
     for key, value in players.items():
         player: Player = next(filter(lambda p: p.id == key, game.players))
         player.cards = value
@@ -211,10 +215,12 @@ def find_player_game_started_in_turn(game_id, player_id):
 def get_player_reached(player, suspect_cards):
     players_len = len(player.game.players)
     player_turn = player.order
-    for i in range(0, players_len - 1):
-        player_found: Player = find_player_by_turn(player.game.players, (player_turn + i % players_len) + 1)
+    next_turn = get_next_turn(player_turn, players_len)
+    while player_turn != next_turn:
+        player_found: Player = find_player_by_turn(player.game.players, next_turn)
         if len(set(map(lambda c: c.id, player_found.cards)).intersection(suspect_cards)) > 0:
             return player_found.id
+        next_turn = get_next_turn(next_turn, players_len)
     return None
 
 
@@ -263,3 +269,18 @@ def find_player_by_turn(players, turn):
 @db_session
 def is_valid_game_player(game_id, player_id):
     find_valid_player(game_id, player_id)
+
+
+@db_session
+def execute_witch(player_game: BasicGameInput):
+
+    player: Player = find_valid_player(player_game.game_id, player_game.player_id)
+
+    if not player.game.started:
+        raise MysteryException(message="Game Not started!", status_code=400)
+
+    if not player.witch:
+        raise MysteryException(message="Player doesn't have the witch card!", status_code=400)
+    card = random.choice(player.game.envelop)
+    player.witch = False
+    return card

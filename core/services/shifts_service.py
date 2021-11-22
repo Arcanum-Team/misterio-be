@@ -1,14 +1,18 @@
 import json
+import random
 
 from uuid import UUID
 
-from pony.orm import ObjectNotFound
-
+from pony.orm import ObjectNotFound, db_session
+ 
+from core.schemas import GameOutput
+from core.repositories.player_repository import player_to_player_output
+from core.models import Player
 from core import logger, LiveGameRoom, get_live_game_room
 from core.repositories import get_adjacent_boxes, get_adj_special_box, is_trap, find_player_by_id_and_game_id, \
     update_current_position, find_player_by_id, get_card_info_by_id, find_four_traps, set_loser, enter_enclosure, \
     exit_enclosure, pass_shift, \
-    find_player_enclosure, is_player_card, do_suspect, do_accuse
+    find_player_enclosure, is_player_card, do_suspect, do_accuse, execute_witch
 from core.schemas import Movement, RollDice, PlayerBox, GamePlayer, DataRoll, Acusse, SuspectResponse, \
     DataSuspectResponse, Suspect, DataAccuse
 from core.exceptions import MysteryException
@@ -190,3 +194,11 @@ def valid_is_player_card(player_id, card_id):
         is_player_card(player_id, card_id)
     except AssertionError:
         raise MysteryException(message="The player is not showing a card of her own")
+
+
+async def execute_witch_service(player_game: BasicGameInput):
+    logger.info(player_game)
+    card = execute_witch(player_game)
+    room: LiveGameRoom = get_live_game_room(player_game.game_id)
+    await room.broadcast_json_message("PLAYER_USE_WITCH_CARD", {"player_id": str(player_game.player_id)})
+    return {"card": card}

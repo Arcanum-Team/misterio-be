@@ -3,6 +3,7 @@ from uuid import UUID
 
 from pydantic import Field
 from pydantic.main import BaseModel
+from starlette.types import Message
 
 
 class GameJoin(BaseModel):
@@ -48,3 +49,7 @@ class GameOutput(GameBasicInfo):
     class Config:
         orm_mode = True
 
+class ChatMessage(BaseModel):
+    game_id: UUID
+    player_id: UUID
+    message: str
