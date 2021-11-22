@@ -25,7 +25,10 @@ def get_game_by_name(name):
 
 @db_session
 def new_game(game):
-    g = Game(name=game.game_name)
+    if game.optional_password:
+        g = Game(name=game.game_name, password=game.optional_password)
+    else:
+        g = Game(name=game.game_name)
     player = Player(nickname=game.nickname, game=g, host=True)
     return GamePlayer(game=game_to_game_output(g),
                       player=player_to_player_output(player))
@@ -65,7 +68,7 @@ def join_player_to_game(game_join):
 
     if g.password:
         if g.password != game_join.optional_password:
-            raise MysteryException(message="password doesnt match, try again!", status_code=400)
+            raise MysteryException(message="password doesn't match, try again!", status_code=400)
 
     if len(g.players) == 6:
         raise MysteryException(message="Full game!", status_code=400)
