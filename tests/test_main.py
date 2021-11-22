@@ -1,9 +1,13 @@
 from fastapi.testclient import TestClient
+import logging
+import json
+import random
+from uuid import UUID
+import main
+from logging.config import dictConfig
 from v1.endpoints.games_endpoint import games_router 
 from v1.endpoints.cards_endpoints import cards_router
 from v1.endpoints.board_endpoint import board_router
-from uuid import UUID
-import main
 from core.repositories.games_repository import find_game_by_name
 from core.repositories.player_repository import find_player_by_id
 from core.services.game_service import find_game_hide_player_id
@@ -11,9 +15,9 @@ from core.services.board_service import get_complete_board
 from core.services.shifts_service import get_possible_movement
 from pony.orm import db_session 
 from core.schemas.card_schema import CardBasicInfo
-import logging
-import json
-from logging.config import dictConfig
+#shift
+from core.repositories.games_repository import find_player_by_turn
+from v1.endpoints.shifts_endpoint import shifts_router
 
 game_info= {}
 player2_id= ''
@@ -317,8 +321,30 @@ def test_get_adjacent():
 
 
 #Shifts
+shift_client= TestClient(shifts_router)
 
-    
+def test_put_move_player():
+    #global game_info
+    with db_session:
+        game= find_game_by_name("strin5")
+        player_by_turn= find_player_by_turn(game.players, game.turn)
+        print(player_by_turn)
+        player_turn= find_player_by_id(player_by_turn.id)
+        
+        board= get_possible_movement(6, player_turn.current_position.id)
+    response = shift_client.get("/move",
+    headers={'accept': 'application/json', 'Content-Type': 'application/json'},
+    json= {
+        "game_id": game_info["game"]["id"],
+        "player_id": str(player_turn.id),
+        "next_box_id": board.pop(),
+        "dice_value": 6
+    })
+    print(response.json())
+    assert response.status_code == 200
+
+
+
 
 
 '''
