@@ -12,7 +12,7 @@ from core import logger, LiveGameRoom, get_live_game_room
 from core.repositories import get_adjacent_boxes, get_adj_special_box, is_trap, find_player_by_id_and_game_id, \
     update_current_position, find_player_by_id, get_card_info_by_id, find_four_traps, set_loser, enter_enclosure, \
     exit_enclosure, pass_shift, \
-    find_player_enclosure, is_player_card, do_suspect, do_accuse
+    find_player_enclosure, is_player_card, do_suspect, do_accuse, execute_witch
 from core.schemas import Movement, RollDice, PlayerBox, GamePlayer, DataRoll, Acusse, SuspectResponse, \
     DataSuspectResponse, Suspect, DataAccuse
 from core.exceptions import MysteryException
@@ -198,15 +198,7 @@ def valid_is_player_card(player_id, card_id):
 
 async def execute_witch_service(player_game: BasicGameInput):
     logger.info(player_game)
-    is_valid_game_player_service(player_game.game_id, player_game.player_id)
-    with db_session:
-        player= find_player_by_id(player_game.player_id) 
-        game = player.game
-        card=random.choice(game.envelop)
-        if not player.witch: 
-            raise MysteryException(message="Player doesn't have the witch card!", status_code=400) 
-        room: LiveGameRoom = get_live_game_room(player_game.game_id)
-
-        await room.message_to_player("SHOW_CARD", player.id, json.loads(card))
-        player.witch = False
-        return GamePlayer(game=GameOutput.from_orm(game), player=player_to_player_output(player))
+    card = execute_witch(player_game)
+    room: LiveGameRoom = get_live_game_room(player_game.game_id)
+    await room.broadcast_json_message("PLAYER_USE_WITCH_CARD", {"player_id": player_game.player_id})
+    return {"card": card}

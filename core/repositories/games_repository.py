@@ -10,6 +10,7 @@ from core.schemas import PlayerOutput, GameOutput, GameListPlayers, GamePlayer, 
     DataAccuse
 from core.repositories.player_repository import player_to_player_output, find_next_available_player, \
     find_available_players_without_me, get_next_turn
+from core.schemas.games_schema import BasicGameInput
 
 
 @db_session
@@ -264,3 +265,18 @@ def find_player_by_turn(players, turn):
 @db_session
 def is_valid_game_player(game_id, player_id):
     find_valid_player(game_id, player_id)
+
+
+@db_session
+def execute_witch(player_game: BasicGameInput):
+
+    player: Player = find_valid_player(player_game.game_id, player_game.player_id)
+
+    if not player.game.started:
+        raise MysteryException(message="Game Not started!", status_code=400)
+
+    if not player.witch:
+        raise MysteryException(message="Player doesn't have the witch card!", status_code=400)
+    card = random.choice(player.game.envelop)
+    player.witch = False
+    return card
