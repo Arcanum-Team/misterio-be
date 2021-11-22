@@ -3,8 +3,8 @@ import random
 
 from uuid import UUID
 
-from pony.orm import ObjectNotFound
-
+from pony.orm import ObjectNotFound, db_session
+ 
 from core.schemas import GameOutput
 from core.repositories.player_repository import player_to_player_output
 from core.models import Player
@@ -198,12 +198,15 @@ def valid_is_player_card(player_id, card_id):
 
 async def execute_witch_service(player_game: BasicGameInput):
     logger.info(player_game)
-    player: Player = is_valid_game_player_service(player_game.game_id, player_game.player_id) 
-    if not player.witch: 
-        raise MysteryException(message="Player doesn't have the witch card!", status_code=400) 
-    room: LiveGameRoom = get_live_game_room(player_game.game_id)
-    card=random.choice(player.game.envelop).json()
+    is_valid_game_player_service(player_game.game_id, player_game.player_id)
+    with db_session:
+        player= find_player_by_id(player_game.player_id) 
+        game = player.game
+        card=random.choice(game.envelop)
+        if not player.witch: 
+            raise MysteryException(message="Player doesn't have the witch card!", status_code=400) 
+        room: LiveGameRoom = get_live_game_room(player_game.game_id)
 
-    await room.message_to_player("SHOW_CARD", player.id, json.loads(card))
-    player.witch = False
-    return GamePlayer(game=GameOutput.from_orm(player_game.game_id), player=player_to_player_output(player))
+        await room.message_to_player("SHOW_CARD", player.id, json.loads(card))
+        player.witch = False
+        return GamePlayer(game=GameOutput.from_orm(game), player=player_to_player_output(player))

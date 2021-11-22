@@ -127,14 +127,13 @@ def start_game_and_set_player_order(game_id, player_id):
     while len(cards_id_list) > 0:
         for key, value in players.items():
             card_id = random.choice(cards_id_list)
+            cards_id_list.remove(card_id)
             if card_id == 21:
                 player_with_witch = key
             else:
                 value.append(get_card_by_id(card_id))
-                cards_id_list.remove(card_id)
-                if len(cards_id_list) == 0:
-                    break
-
+            if len(cards_id_list) == 0:
+                break
     for key, value in players.items():
         player: Player = next(filter(lambda p: p.id == key, game.players))
         player.cards = value
