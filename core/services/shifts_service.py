@@ -1,22 +1,18 @@
 import json
-import random
 
 from uuid import UUID
 
-from pony.orm import ObjectNotFound, db_session
- 
-from core.schemas import GameOutput
-from core.repositories.player_repository import player_to_player_output
-from core.models import Player
+from pony.orm import ObjectNotFound
+
 from core import logger, LiveGameRoom, get_live_game_room
 from core.repositories import get_adjacent_boxes, get_adj_special_box, is_trap, find_player_by_id_and_game_id, \
-    update_current_position, find_player_by_id, get_card_info_by_id, find_four_traps, set_loser, enter_enclosure, \
+    update_current_position, find_player_by_id, get_card_info_by_id, find_four_traps, enter_enclosure, \
     exit_enclosure, pass_shift, \
     find_player_enclosure, is_player_card, do_suspect, do_accuse, execute_witch
 from core.schemas import Movement, RollDice, PlayerBox, GamePlayer, DataRoll, Acusse, SuspectResponse, \
-    DataSuspectResponse, Suspect, DataAccuse
+    DataSuspectResponse, Suspect
 from core.exceptions import MysteryException
-from core.services import is_valid_game_player_service, get_envelop, valid_is_started
+from core.services import is_valid_game_player_service
 from core.schemas.player_schema import BasicGameInput
 
 
@@ -193,7 +189,7 @@ def valid_is_player_card(player_id, card_id):
     try:
         is_player_card(player_id, card_id)
     except AssertionError:
-        raise MysteryException(message="The player is not showing a card of her own")
+        raise MysteryException(message="The player is not showing a card of her own", status_code=400)
 
 
 async def execute_witch_service(player_game: BasicGameInput):
