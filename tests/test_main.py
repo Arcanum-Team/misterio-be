@@ -7,7 +7,10 @@ import main
 from core.repositories.games_repository import find_game_by_name
 from core.repositories.player_repository import find_player_by_id
 from core.services.game_service import find_game_hide_player_id
+from core.services.board_service import get_complete_board
+from core.services.shifts_service import get_possible_movement
 from pony.orm import db_session 
+from core.schemas.card_schema import CardBasicInfo
 import logging
 import json
 from logging.config import dictConfig
@@ -166,6 +169,157 @@ def test_put_games_start():
     }
 
 
+# cards
+card_client = TestClient(cards_router)
+
+def test_get_all_cards():
+    response = card_client.get("/",
+    headers={'accept': 'application/json'}) 
+    assert response.status_code == 200
+    assert response.json()==[
+        {
+            "id": 1,
+            "name": "COCHERA",
+            "type": "ENCLOSURE"
+        },
+        {
+            "id": 2,
+            "name": "ALCOBA",
+            "type": "ENCLOSURE"
+        },
+        {
+            "id": 3,
+            "name": "BIBLIOTECA",
+            "type": "ENCLOSURE"
+        },
+        {
+            "id": 4,
+            "name": "VESTIBULO",
+            "type": "ENCLOSURE"
+        },
+        {
+            "id": 5,
+            "name": "PANTEON",
+            "type": "ENCLOSURE"
+        },
+        {
+            "id": 6,
+            "name": "BODEGA",
+            "type": "ENCLOSURE"
+        },
+        {
+            "id": 7,
+            "name": "SALON",
+            "type": "ENCLOSURE"
+        },
+        {
+            "id": 8,
+            "name": "LABORATORIO",
+            "type": "ENCLOSURE"
+        },
+        {
+            "id": 9,
+            "name": "DRACULA",
+            "type": "MONSTER"
+        },
+        {
+            "id": 10,
+            "name": "FRANKENSTEIN",
+            "type": "MONSTER"
+        },
+        {
+            "id": 11,
+            "name": "HOMBRE LOBO",
+            "type": "MONSTER"
+        },
+        {
+            "id": 12,
+            "name": "FANTASMA",
+            "type": "MONSTER"
+        },
+        {
+            "id": 13,
+            "name": "MOMIA",
+            "type": "MONSTER"
+        },
+        {
+            "id": 14,
+            "name": "DR. JEKYLL MR. HYDE",
+            "type": "MONSTER"
+        },
+        {
+            "id": 15,
+            "name": "CONDE",
+            "type": "VICTIM"
+        },
+        {
+            "id": 16,
+            "name": "CONDESA",
+            "type": "VICTIM"
+        },
+        {
+            "id": 17,
+            "name": "AMA DE LLAVES",
+            "type": "VICTIM"
+        },
+        {
+            "id": 18,
+            "name": "MAYORDOMO",
+            "type": "VICTIM"
+        },
+        {
+            "id": 19,
+            "name": "DONCELLA",
+            "type": "VICTIM"
+        },
+        {
+            "id": 20,
+            "name": "JARDINERO",
+            "type": "VICTIM"
+        }
+    ]
+
+def test_get_player_cards():
+    global game_info
+    id = game_info['player']['id']
+    response = card_client.get("/"+id,
+    headers= {'accept': 'application/json'}) 
+    with db_session:
+        player = find_player_by_id(id)
+        cards_list= [{"id": card.id, "name": card.name, "type": card.type} for card in player.cards]
+    assert response.status_code == 200
+    same_cards= True
+    for i in response.json():
+        if i not in cards_list:
+            same_cards= False
+            break
+    assert same_cards  
+
+
+# Board
+board_client = TestClient(board_router)
+
+
+def test_get_board():
+    response = board_client.get("/",
+    headers={'accept': 'application/json'}) 
+    board= get_complete_board()
+    assert response.status_code == 200
+    '''assert set(response.json())==set(board)'''
+
+
+def test_get_adjacent():
+    response = board_client.get("/box/adj/4/3",
+    headers={'accept': 'application/json'}) 
+    board= get_possible_movement(3, 4)
+    assert response.status_code == 200
+    assert response.json()== list(board)
+
+
+#Shifts
+
+    
+
 
 '''
 def test_put_games_pass_turn():
@@ -176,23 +330,6 @@ def test_put_games_pass_turn():
         json= {
             "game_id": game_info['game']['id']
         })
-    assert response.status_code == 200
-
-
-# cards
-card_client = TestClient(cards_router)
-
-def test_get_all_cards():
-    response = card_client.get("/",
-    headers={'accept': 'application/json'}) # aca va el path si es un get, put o post
-    assert response.status_code == 200
-
-
-def test_get_payer_cards():
-    global game_info
-    id = game_info['player']['id']
-    response = card_client.get("/"+id,
-    headers={'accept': 'application/json'}) # aca va el path si es un get, put o post
     assert response.status_code == 200
 '''
 
