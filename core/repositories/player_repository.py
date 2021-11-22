@@ -73,7 +73,7 @@ def exit_enclosure(player_id, box_id):
 @db_session
 def player_to_player_output(player):
     output: PlayerOutput = PlayerOutput(id=player.id, nickname=player.nickname, host=player.host, order=player.order,
-                                        witch=player.witch)
+                                        witch=player.witch, loser=player.loser)
     if player.current_position:
         output.current_position = BoxOutput(id=player.current_position.id, attribute=player.current_position.type.value)
     if player.enclosure:
@@ -100,7 +100,6 @@ def get_next_turn(current_turn, max_turn_value):
 @db_session
 def find_next_available_player(player_in_shift: Player):
     available_players: Set[Player] = find_available_players_without_me(player_in_shift)
-    assert len(available_players) > 0
     max_turn_value: int = len(player_in_shift.game.players)
     next_player = None
     current_turn: int = player_in_shift.order
