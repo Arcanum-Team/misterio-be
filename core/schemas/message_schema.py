@@ -30,6 +30,11 @@ class DataAccuse(GamePlayer):
 class DataRoll(DataMessage):
     dice: int
 
+class DataChatMessage(BaseModel):
+    game_id: UUID
+    nickname: str
+    message: str
+
 
 class Message(BaseModel):
     type: str

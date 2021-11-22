@@ -2,6 +2,7 @@ import logging
 from logging.config import dictConfig
 from uuid import UUID
 from fastapi import WebSocket
+from pony.utils.utils import absolutize_path
 from pydantic import BaseSettings, BaseModel
 from typing import Optional, Dict, List, Any
 
@@ -176,6 +177,14 @@ class LiveGameRoom:
     async def message_to_player(self, player_id: UUID, message_type: str, data: Any):
         wb = self._players.get(str(player_id))
         await wb.send_json({"type": message_type, "data": data})
+
+    async def broadcast_exept_one(self, player_exept: UUID, message_type: str, data: Any):
+        keys = self._players.keys()
+        for player_id in keys:
+            if str(player_id) != str(player_exept):
+                websocket = self._players.get(str(player_id))
+                await websocket.send_json({"type": message_type, "data": data})
+
 
 
 games: Dict[UUID, LiveGameRoom] = {}

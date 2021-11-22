@@ -122,3 +122,13 @@ def is_player_card(player_id, card_id):
     player: Player = find_player_by_id(player_id)
     cards = list(map(lambda x: x.id, player.cards))
     assert card_id in cards
+
+
+@db_session
+def player_have_lost(player_id):
+    return Player[player_id].loser
+
+
+@db_session
+def get_player_nickname(player_id):
+    return Player[player_id].nickname
