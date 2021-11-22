@@ -106,9 +106,7 @@ def test_get_games_id():
     id= game_info['game']['id']
     response = game_client.get("/"+id,
     headers={'accept': 'application/json'})
-    with db_session:
-        game= find_game_hide_player_id(id)
-        assert response.status_code == 200
+    assert response.status_code == 200
 
 
 def test_put_games_start():
@@ -302,7 +300,6 @@ def test_get_board():
     headers={'accept': 'application/json'}) 
     board= get_complete_board()
     assert response.status_code == 200
-    #assert set(response.json())==set(board)
 
 
 def test_get_adjacent():
@@ -426,6 +423,7 @@ def test_put_enclosure_enter():
     )
     assert response.status_code == 200
 
+
 '''
 def test_put_enclosure_exit():
     global game_info
@@ -452,6 +450,8 @@ def test_put_games_pass_turn():
         })
     assert response.status_code == 200
 '''
+
+
 
 
 
