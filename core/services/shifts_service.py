@@ -107,7 +107,7 @@ async def suspect_service(suspect: Suspect):
     valid_cards_suspect(suspect)
     suspect_notice = do_suspect(suspect)
     room: LiveGameRoom = get_live_game_room(suspect.game_id)
-    await room.broadcast_json_message("SUSPECT", json.loads(suspect_notice.json()))
+    #await room.broadcast_json_message("SUSPECT", json.loads(suspect_notice.json()))
 
 
 async def suspect_response_service(response: SuspectResponse):
@@ -116,7 +116,7 @@ async def suspect_response_service(response: SuspectResponse):
     valid_is_player_card(response.from_player, response.card)
     room: LiveGameRoom = get_live_game_room(response.game_id)
     data = DataSuspectResponse(card=response.card)
-    await room.message_to_player(response.to_player, "SUSPECT_RESPONSE", json.loads(data.json()))
+    #await room.message_to_player(response.to_player, "SUSPECT_RESPONSE", json.loads(data.json()))
     return "SUSPECT_RESPONSE_SENT"
 
 
@@ -172,7 +172,7 @@ async def accuse_service(accuse: Acusse):
     valid_cards(accuse)
     data_accuse = do_accuse(accuse)
     wb = get_live_game_room(accuse.game_id)
-    await wb.broadcast_json_message("ACCUSE", json.loads(data_accuse.json()))
+    #await wb.broadcast_json_message("ACCUSE", json.loads(data_accuse.json()))
     return data_accuse
 
 

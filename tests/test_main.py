@@ -18,6 +18,7 @@ from core.schemas.card_schema import CardBasicInfo
 #shift
 from core.repositories.games_repository import find_player_by_turn
 from v1.endpoints.shifts_endpoint import shifts_router
+from core.models.board_model import Enclosure
 
 game_info= {}
 player2_id= ''
@@ -315,12 +316,13 @@ def test_get_adjacent():
 #Shifts
 shift_client= TestClient(shifts_router)
 
+
+'''
 def test_put_move_player():
     #global game_info
     with db_session:
         game= find_game_by_name("strin5")
         player_by_turn= find_player_by_turn(game.players, game.turn)
-        print(player_by_turn)
         player_turn= find_player_by_id(player_by_turn.id)
         
         board= get_possible_movement(6, player_turn.current_position.id)
@@ -335,6 +337,70 @@ def test_put_move_player():
     assert response.status_code == 200
 '''
 
+'''
+def test_put_accuse():
+    global game_info
+    id = game_info['player']['id']
+    response = shift_client.get("/accuse",
+    headers={'accept': 'application/json',
+        'Content-Type': 'application/json'},
+    json= {
+        "game_id": game_info['game']['id'],
+        "player_id": id,
+        "monster_id": 10,
+        "victim_id": 16,
+        "enclosure_id": 6
+        }
+    ) 
+    assert response.status_code == 200
+'''
+
+
+def  test_put_games_suspect():
+    global game_info
+    with db_session:
+        game= find_game_by_name("strin5")
+        player_by_turn= find_player_by_turn(game.players, game.turn)
+        player_turn= find_player_by_id(player_by_turn.id)
+        player_turn.enclosure= Enclosure[2]
+    response = shift_client.put("/suspect",
+    headers={'accept': 'application/json',
+        'Content-Type': 'application/json'},
+    json= {
+        "game_id": str(game.id),
+        "player_id": str(player_turn.id),
+        "monster_id": 10,
+        "victim_id": 19
+    }
+    )
+    assert response.status_code == 200
+
+
+def test_put_send_suspect_card():
+    global game_info, player2_id
+    with db_session:
+        game= find_game_by_name("strin5")
+        player1= find_player_by_id(game_info["player"]["id"])
+        player2= find_player_by_id(player2_id)
+        for card in player1.cards:
+            card_id= card.id
+            break
+    response = shift_client.put("/send_suspect_card",
+    headers={'accept': 'application/json',
+        'Content-Type': 'application/json'},
+    json= {
+        "game_id": str(game.id),
+        "from_player": str(player1.id),
+        "to_player":  str(player2.id),
+        "card": card_id
+        }
+    )
+    assert response.status_code == 200
+
+
+
+
+'''
 def test_put_games_pass_turn():
     global game_info
     response = game_client.put("/pass_turn",
