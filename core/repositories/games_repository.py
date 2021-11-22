@@ -63,7 +63,6 @@ def join_player_to_game(game_join):
         raise MysteryException(message="Game has already been started", status_code=400)
 
     if g.password:
-        raise MysteryException(message="entry!", status_code=400)
         if g.password != game_join.optional_password:
             raise MysteryException(message="password doesnt match, try again!", status_code=400)
 
