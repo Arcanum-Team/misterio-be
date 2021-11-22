@@ -13,7 +13,6 @@ from core.schemas import NewGame, GameJoin, GameListPlayers, GamePlayer, ChatMes
 from core.schemas.games_schema import GameBasicInfo, BasicGameInput
 from core.services import start_new_game, find_game_hide_player_id, join_player, chat_service
 
-
 games_router = APIRouter()
 
 
@@ -53,7 +52,7 @@ def get_all_available_games():
 async def start_created_game(game: BasicGameInput):
     return await start_new_game(game)
 
+
 @games_router.put("/chat")
 async def chat_endpoint(message: ChatMessage):
     return await chat_service(message)
-
