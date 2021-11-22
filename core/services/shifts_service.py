@@ -12,7 +12,7 @@ from core import logger, LiveGameRoom, get_live_game_room
 from core.repositories import get_adjacent_boxes, get_adj_special_box, is_trap, find_player_by_id_and_game_id, \
     update_current_position, find_player_by_id, get_card_info_by_id, find_four_traps, set_loser, enter_enclosure, \
     exit_enclosure, pass_shift, \
-    find_player_enclosure, is_player_card, do_suspect
+    find_player_enclosure, is_player_card, do_suspect, do_accuse
 from core.schemas import Movement, RollDice, PlayerBox, GamePlayer, DataRoll, Acusse, SuspectResponse, \
     DataSuspectResponse, Suspect, DataAccuse
 from core.exceptions import MysteryException
@@ -174,24 +174,10 @@ async def pass_turn_service(player_game: BasicGameInput):
 
 async def accuse_service(accuse: Acusse):
     valid_cards(accuse)
-    valid_is_started(accuse.game_id)
-    is_valid_game_player_service(accuse.game_id, accuse.player_id)
-    envelope = get_envelop(accuse.game_id)
-    logger.info(envelope)
-    accuse_cards = [accuse.enclosure_id, accuse.monster_id, accuse.victim_id]
-    player_id = accuse.player_id
-    r = set(envelope).difference(accuse_cards)
-    if len(r) == 0:
-        data = DataAccuse(player_id=player_id, result=True, cards=envelope,
-                          game_id=accuse.game_id)
-    else:
-        data = DataAccuse(player_id=player_id, result=False, cards=accuse_cards,
-                          game_id=accuse.game_id)
-        set_loser(player_id)
-
+    data_accuse = do_accuse(accuse)
     wb = get_live_game_room(accuse.game_id)
-    await wb.broadcast_json_message("ACCUSE", json.loads(data.json()))
-    return data
+    await wb.broadcast_json_message("ACCUSE", json.loads(data_accuse.json()))
+    return data_accuse
 
 
 def valid_player_enclosure(player_id):

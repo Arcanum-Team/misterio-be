@@ -37,6 +37,7 @@ class PlayerOutput(BaseModel):
     order: Optional[int]
     witch: bool
     host: bool
+    loser: bool
     current_position: Optional[BoxOutput]
     enclosure: Optional[EnclosureOutput]
 
