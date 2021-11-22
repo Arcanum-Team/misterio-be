@@ -6,8 +6,8 @@ from pony.orm import ObjectNotFound
 from core import logger, LiveGameRoom, get_live_game_room
 from core.exceptions import MysteryException
 from core.repositories import find_complete_game, find_game_by_id, join_player_to_game, is_valid_game_player, \
-    start_game_and_set_player_order
-from core.schemas import GameJoin, GameListPlayers
+    start_game_and_set_player_order, player_have_lost, get_player_nickname
+from core.schemas import GameJoin, GameListPlayers, DataChatMessage
 from core.schemas.player_schema import BasicGameInput
 
 
@@ -73,3 +73,14 @@ def is_valid_game_player_service(game_id, player_id):
         is_valid_game_player(game_id, player_id)
     except ObjectNotFound:
         raise MysteryException(message="Game not found!", status_code=404)
+
+
+async def chat_service(message):
+    is_valid_game_player_service(message.game_id, message.player_id)
+    if player_have_lost(message.player_id):
+        raise MysteryException(message="Player is not avalible to chat!", status_code=400)
+    nick = get_player_nickname(message.player_id)
+    data = DataChatMessage(game_id=message.game_id, nickname=nick, message=message.message)
+    room: LiveGameRoom = get_live_game_room(message.game_id)
+    await room.broadcast_exept_one(message.player_id, "CHAT", json.loads(data.json()))
+    return message.message

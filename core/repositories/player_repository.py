@@ -73,7 +73,7 @@ def exit_enclosure(player_id, box_id):
 @db_session
 def player_to_player_output(player):
     output: PlayerOutput = PlayerOutput(id=player.id, nickname=player.nickname, host=player.host, order=player.order,
-                                        witch=player.witch)
+                                        witch=player.witch, loser=player.loser, color=player.color)
     if player.current_position:
         output.current_position = BoxOutput(id=player.current_position.id, attribute=player.current_position.type.value)
     if player.enclosure:
@@ -100,20 +100,20 @@ def get_next_turn(current_turn, max_turn_value):
 @db_session
 def find_next_available_player(player_in_shift: Player):
     available_players: Set[Player] = find_available_players_without_me(player_in_shift)
-    assert len(available_players) > 0
+
     max_turn_value: int = len(player_in_shift.game.players)
     next_player = None
     current_turn: int = player_in_shift.order
     while not next_player:
-        next_turn: int = get_next_turn(current_turn, max_turn_value)
-        next_player = next(filter(lambda p: p.order == next_turn, available_players), None)
+        current_turn: int = get_next_turn(current_turn, max_turn_value)
+        next_player = next(filter(lambda p: p.order == current_turn, available_players), None)
     return next_player
 
 
 @db_session
 def find_player_enclosure(player_id):
     player: Player = find_player_by_id(player_id)
-    assert player.enclosure != None
+    assert player.enclosure
     return player.enclosure.id
 
 
@@ -122,3 +122,13 @@ def is_player_card(player_id, card_id):
     player: Player = find_player_by_id(player_id)
     cards = list(map(lambda x: x.id, player.cards))
     assert card_id in cards
+
+
+@db_session
+def player_have_lost(player_id):
+    return Player[player_id].loser
+
+
+@db_session
+def get_player_nickname(player_id):
+    return Player[player_id].nickname
