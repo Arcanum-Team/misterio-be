@@ -96,6 +96,8 @@ def start_game_and_set_player_order(game_id, player_id):
     victims_id_list = list(map(lambda x: x.id, filter(lambda card: card.type == "VICTIM", cards)))
     monsters_id_list = list(map(lambda x: x.id, filter(lambda card: card.type == "MONSTER", cards)))
 
+    colors = ["blue", "green", "orange", "red", "white", "yellow"]
+
     random_mystery_enclosure = random.choice(enclosures_id_list)
     random_mystery_monster = random.choice(monsters_id_list)
     random_mystery_victim = random.choice(victims_id_list)
@@ -104,7 +106,6 @@ def start_game_and_set_player_order(game_id, player_id):
     cards_id_list.remove(random_mystery_victim)
     cards_id_list.remove(random_mystery_enclosure)
     cards_id_list.append(21)  # ADD WITCH CARD
-    random.shuffle(cards_id_list)  # Mix Cards
     game.envelop = envelop
 
     players: Dict[int, List[Card]] = {}
@@ -114,7 +115,10 @@ def start_game_and_set_player_order(game_id, player_id):
     # Initialize players dict and set
     for player in game.players:
         box = random.choice(entries)
+        color = random.choice(colors)
         player.current_position = box
+        player.color = color
+        colors.remove(color)
         entries.remove(box)
         players[player.id] = list()
 
