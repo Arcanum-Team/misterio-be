@@ -6,4 +6,4 @@ from .games_repository import join_player_to_game, get_games, new_game, find_com
     find_player_by_turn, get_game_players_count, do_suspect, do_accuse
 from .player_repository import find_player_by_id, find_basic_player, get_cards_by_player_id, \
     update_current_position, set_loser, player_to_player_output, enter_enclosure, exit_enclosure, \
-    find_next_available_player, find_player_enclosure, is_player_card
+    find_next_available_player, find_player_enclosure, is_player_card, get_next_turn

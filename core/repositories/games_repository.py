@@ -9,7 +9,7 @@ from core.exceptions import MysteryException
 from core.schemas import PlayerOutput, GameOutput, GameListPlayers, GamePlayer, Suspect, DataSuspectNotice, Acusse, \
     DataAccuse
 from core.repositories.player_repository import player_to_player_output, find_player_by_id, find_next_available_player, \
-    find_available_players_without_me
+    find_available_players_without_me, get_next_turn
 
 
 @db_session
@@ -207,10 +207,12 @@ def find_player_game_started_in_turn(game_id, player_id):
 def get_player_reached(player, suspect_cards):
     players_len = len(player.game.players)
     player_turn = player.order
-    for i in range(0, players_len - 1):
-        player_found: Player = find_player_by_turn(player.game.players, (player_turn + i % players_len) + 1)
+    next_turn = get_next_turn(player_turn, players_len)
+    while player_turn != next_turn:
+        player_found: Player = find_player_by_turn(player.game.players, next_turn)
         if len(set(map(lambda c: c.id, player_found.cards)).intersection(suspect_cards)) > 0:
             return player_found.id
+        next_turn = get_next_turn(next_turn, players_len)
     return None
 
 

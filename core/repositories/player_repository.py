@@ -100,19 +100,22 @@ def get_next_turn(current_turn, max_turn_value):
 @db_session
 def find_next_available_player(player_in_shift: Player):
     available_players: Set[Player] = find_available_players_without_me(player_in_shift)
-    max_turn_value: int = len(player_in_shift.game.players)
+
+    max_turn_value: int = len(player_in_shift.game.players) #4
     next_player = None
-    current_turn: int = player_in_shift.order
+    current_turn: int = player_in_shift.order #1
     while not next_player:
-        next_turn: int = get_next_turn(current_turn, max_turn_value)
-        next_player = next(filter(lambda p: p.order == next_turn, available_players), None)
+        current_turn: int = get_next_turn(current_turn, max_turn_value)
+        next_player = next(filter(lambda p: p.order == current_turn, available_players), None)
+    print("================= SALI =================")
+    print(next_player)
     return next_player
 
 
 @db_session
 def find_player_enclosure(player_id):
     player: Player = find_player_by_id(player_id)
-    assert player.enclosure != None
+    assert player.enclosure
     return player.enclosure.id
 
 
