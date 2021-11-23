@@ -59,6 +59,7 @@ def find_player_by_id_game_id_service(player_id: UUID, game_id: UUID):
 
 
 async def move_player_service(movement: Movement):
+    logger.info(movement)
     game_player: GamePlayer = find_player_by_id_game_id_service(movement.player_id, movement.game_id)
     if not game_player.game.started:
         raise MysteryException(message="Game not started!", status_code=400)
