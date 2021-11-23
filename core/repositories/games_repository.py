@@ -25,8 +25,8 @@ def get_game_by_name(name):
 
 @db_session
 def new_game(game):
-    if game.optional_password:
-        g = Game(name=game.game_name, password=game.optional_password)
+    if game.password:
+        g = Game(name=game.game_name, password=game.password)
     else:
         g = Game(name=game.game_name)
     player = Player(nickname=game.nickname, game=g, host=True)
@@ -67,7 +67,7 @@ def join_player_to_game(game_join):
         raise MysteryException(message="Game has already been started", status_code=400)
 
     if g.password:
-        if g.password != game_join.optional_password:
+        if g.password != game_join.password:
             raise MysteryException(message="password doesn't match, try again!", status_code=400)
 
     if len(g.players) == 6:
