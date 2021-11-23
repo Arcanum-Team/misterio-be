@@ -37,6 +37,7 @@ class GameBasicInfo(BaseModel):
     name: str
     player_count: Optional[int]
     started: bool
+    has_password: Optional[bool]
 
     class Config:
         orm_mode = True
