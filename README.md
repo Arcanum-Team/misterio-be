@@ -1,13 +1,17 @@
 # Misterio API
 
 ## Descripción
-Aqui agregar una descripción de la API
+API server para el juego El Misterio
 
 ## Prerequisitos
-Detallar aquí los requisitos mínimos para levantar la API
-
-## Repositorio
-Aqui agregar la ruta de github
+#python3 -m venv venv
+#source venv/bin/activate
+pony==0.7.14
+fastapi==0.70.0
+"uvicorn[standard]"  #0.15.0
+pydantic~=1.8.2
+numpy~=1.21.4
+starlette~=0.16.0
 
 ## Despliegue
 
