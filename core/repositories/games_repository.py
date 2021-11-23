@@ -15,7 +15,7 @@ from core.schemas.games_schema import BasicGameInput
 
 @db_session
 def get_games():
-    return select((g.name, len(g.players), g.started) for g in Game if not g.started)[:]
+    return select((g.name, len(g.players), g.started, len(g.password)>0 ) for g in Game if not g.started)[:]
 
 
 @db_session
