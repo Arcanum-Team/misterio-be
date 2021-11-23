@@ -4,8 +4,8 @@
 API server para el juego El Misterio
 
 ## Prerequisitos
-#python3 -m venv venv
-#source venv/bin/activate
+python3 -m venv venv
+source venv/bin/activate
 pony==0.7.14
 fastapi==0.70.0
 "uvicorn[standard]"  #0.15.0
