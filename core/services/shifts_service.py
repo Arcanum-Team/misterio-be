@@ -72,7 +72,10 @@ async def move_player_service(movement: Movement):
     new_player_position = update_current_position(movement.player_id, movement.next_box_id)
     game_player.player = new_player_position
     room: LiveGameRoom = get_live_game_room(movement.game_id)
-    await room.broadcast_json_message("PLAYER_NEW_POSITION", json.loads(game_player.json()))
+    if room:
+        await room.broadcast_json_message("PLAYER_NEW_POSITION", json.loads(game_player.json()))
+    else:
+        logger.error("Web socket message not sent!")
     return game_player
 
 
@@ -107,16 +110,22 @@ async def suspect_service(suspect: Suspect):
     valid_cards_suspect(suspect)
     suspect_notice = do_suspect(suspect)
     room: LiveGameRoom = get_live_game_room(suspect.game_id)
-    await room.broadcast_json_message("SUSPECT", json.loads(suspect_notice.json()))#
+    if room:
+        await room.broadcast_json_message("SUSPECT", json.loads(suspect_notice.json()))
+    else:
+        logger.error("Web socket message not sent!")
 
 
 async def suspect_response_service(response: SuspectResponse):
     is_valid_game_player_service(response.game_id, response.from_player)
     is_valid_game_player_service(response.game_id, response.to_player)
     valid_is_player_card(response.from_player, response.card)
-    room: LiveGameRoom = get_live_game_room(response.game_id)
     data = DataSuspectResponse(card=response.card)
-    await room.message_to_player(response.to_player, "SUSPECT_RESPONSE", json.loads(data.json()))#
+    room: LiveGameRoom = get_live_game_room(response.game_id)
+    if room:
+        await room.message_to_player(response.to_player, "SUSPECT_RESPONSE", json.loads(data.json()))
+    else:
+        logger.error("Web socket message not sent!")
     return "SUSPECT_RESPONSE_SENT"
 
 
@@ -124,9 +133,12 @@ async def roll_dice_service(roll: RollDice):
     logger.info(roll)
     pos = find_player_pos_service(roll.player_id)
     possible_boxes = get_possible_movement(roll.dice, pos)
-    room: LiveGameRoom = get_live_game_room(roll.game_id)
     data = DataRoll(game_id=roll.game_id, player_id=roll.player_id, dice=roll.dice)
-    await room.broadcast_json_message("VALUE_DICE", json.loads(data.json()))#
+    room: LiveGameRoom = get_live_game_room(roll.game_id)
+    if room:
+        await room.broadcast_json_message("VALUE_DICE", json.loads(data.json()))
+    else:
+        logger.error("Web socket message not sent!")
     return possible_boxes
 
 
@@ -140,7 +152,10 @@ async def enclosure_enter_service(player_game: BasicGameInput):
     try:
         game_player: GamePlayer = enter_enclosure(player_game.player_id)
         room: LiveGameRoom = get_live_game_room(player_game.game_id)
-        await room.broadcast_json_message("ENCLOSURE_ENTER", json.loads(game_player.json()))#
+        if room:
+            await room.broadcast_json_message("ENCLOSURE_ENTER", json.loads(game_player.json()))
+        else:
+            logger.error("Web socket message not sent!")
         return game_player
     except AssertionError:
         raise MysteryException(message="Invalid movement", status_code=400)
@@ -152,7 +167,10 @@ async def enclosure_exit_service(player_game: PlayerBox):
     try:
         game_player: GamePlayer = exit_enclosure(player_game.player_id, player_game.box_id)
         room: LiveGameRoom = get_live_game_room(player_game.game_id)
-        await room.broadcast_json_message("ENCLOSURE_EXIT", json.loads(game_player.json()))
+        if room:
+            await room.broadcast_json_message("ENCLOSURE_EXIT", json.loads(game_player.json()))
+        else:
+            logger.error("Web socket message not sent!")
         return game_player
     except AssertionError:
         raise MysteryException(message="Invalid movement", status_code=400)
@@ -163,7 +181,10 @@ async def pass_turn_service(player_game: BasicGameInput):
     try:
         game_player: GamePlayer = pass_shift(player_game.game_id, player_game.player_id)
         room: LiveGameRoom = get_live_game_room(player_game.game_id)
-        await room.broadcast_json_message("ASSIGN_SHIFT", json.loads(game_player.json()))
+        if room:
+            await room.broadcast_json_message("ASSIGN_SHIFT", json.loads(game_player.json()))
+        else:
+            logger.error("Web socket message not sent!")
     except AssertionError:
         raise MysteryException(message="Invalid movement", status_code=400)
 
@@ -171,8 +192,11 @@ async def pass_turn_service(player_game: BasicGameInput):
 async def accuse_service(accuse: Acusse):
     valid_cards(accuse)
     data_accuse = do_accuse(accuse)
-    wb = get_live_game_room(accuse.game_id)
-    await wb.broadcast_json_message("ACCUSE", json.loads(data_accuse.json()))#
+    room = get_live_game_room(accuse.game_id)
+    if room:
+        await room.broadcast_json_message("ACCUSE", json.loads(data_accuse.json()))  #
+    else:
+        logger.error("Web socket message not sent!")
     return data_accuse
 
 
@@ -196,5 +220,8 @@ async def execute_witch_service(player_game: BasicGameInput):
     logger.info(player_game)
     card = execute_witch(player_game)
     room: LiveGameRoom = get_live_game_room(player_game.game_id)
-    await room.broadcast_json_message("PLAYER_USE_WITCH_CARD", {"player_id": str(player_game.player_id)})
+    if room:
+        await room.broadcast_json_message("PLAYER_USE_WITCH_CARD", {"player_id": str(player_game.player_id)})
+    else:
+        logger.error("Web socket message not sent!")
     return {"card": card}
