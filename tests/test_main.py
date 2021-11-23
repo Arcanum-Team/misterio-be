@@ -103,62 +103,6 @@ def test_get_games_id():
     assert response.status_code == 200
 
 
-def test_put_games_start():
-    global game_info
-    response = game_client.put("/start",
-                               headers={'accept': 'application/json', 'Content-Type': 'application/json'},
-                               json={
-                                   "game_id": game_info['game']['id'],
-                                   "player_id": game_info['player']['id']
-                               })
-    with db_session:
-        game = find_game_by_name("strin5")
-        player1 = find_player_by_id(response.json()["players"][0]["id"])
-        player2 = find_player_by_id(response.json()["players"][1]["id"])
-
-    assert response.status_code == 200
-    assert response.json() == {
-        "game": {
-            "name": game.name,
-            "player_count": 2,
-            "started": game.started,
-            "has_password": None,
-            "id": str(game.id),
-            "turn": game.turn
-        },
-        "players": [
-            {
-                "id": str(player1.id),
-                "nickname": player1.nickname,
-                "order": player1.order,
-                "witch": player1.witch,
-                "host": player1.host,
-                "loser": player1.loser,
-                "color": player1.color,
-                "current_position": {
-                    "id": player1.current_position.id,
-                    "attribute": "ENTRY"
-                },
-                "enclosure": player1.enclosure
-            },
-            {
-                "id": str(player2.id),
-                "nickname": player2.nickname,
-                "order": player2.order,
-                "witch": player2.witch,
-                "host": player2.host,
-                "loser": player2.loser,
-                "color": player2.color,
-                "current_position": {
-                    "id": player2.current_position.id,
-                    "attribute": "ENTRY"
-                },
-                "enclosure": player2.enclosure
-            }
-        ]
-    }
-
-
 # cards
 card_client = TestClient(cards_router)
 
