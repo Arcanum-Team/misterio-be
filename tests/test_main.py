@@ -10,7 +10,7 @@ from pony.orm import db_session
 from core.repositories.games_repository import find_player_by_turn
 from v1.endpoints.shifts_endpoint import shifts_router
 from core.models.board_model import Enclosure, Box
-
+import main
 game_info = {}
 player2_id = ''
 
@@ -42,6 +42,7 @@ def test_post_games():
             "name": game.name,
             "player_count": 1,
             "started": game.started,
+            "has_password": None,
             "id": str(game.id),
             "turn": game.turn
         },
@@ -76,6 +77,7 @@ def test_put_games_join():
             "name": game.name,
             "player_count": 2,
             "started": game.started,
+            "has_password": None,
             "id": str(game.id),
             "turn": game.turn
         },
@@ -120,6 +122,7 @@ def test_put_games_start():
             "name": game.name,
             "player_count": 2,
             "started": game.started,
+            "has_password": None,
             "id": str(game.id),
             "turn": game.turn
         },
@@ -306,44 +309,6 @@ def test_get_adjacent():
 
 # Shifts
 shift_client = TestClient(shifts_router)
-
-'''
-def test_put_move_player():
-    #global game_info
-    with db_session:
-        game= find_game_by_name("strin5")
-        player_by_turn= find_player_by_turn(game.players, game.turn)
-        player_turn= find_player_by_id(player_by_turn.id)
-        
-        board= get_possible_movement(6, player_turn.current_position.id)
-    response = shift_client.get("/move",
-    headers={'accept': 'application/json', 'Content-Type': 'application/json'},
-    json= {
-        "game_id": game_info["game"]["id"],
-        "player_id": str(player_turn.id),
-        "next_box_id": board.pop(),
-        "dice_value": 6
-    })
-    assert response.status_code == 200
-'''
-
-'''
-def test_put_accuse():
-    global game_info
-    id = game_info['player']['id']
-    response = shift_client.get("/accuse",
-    headers={'accept': 'application/json',
-        'Content-Type': 'application/json'},
-    json= {
-        "game_id": game_info['game']['id'],
-        "player_id": id,
-        "monster_id": 10,
-        "victim_id": 16,
-        "enclosure_id": 6
-        }
-    ) 
-    assert response.status_code == 200
-'''
 
 
 def test_put_games_suspect():
