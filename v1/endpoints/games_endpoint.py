@@ -45,7 +45,7 @@ def find_game_by_id(id: UUID):
 
 @games_router.get("/", response_model=List[GameBasicInfo])
 def get_all_available_games():
-    return [GameBasicInfo(name=row[0], player_count=row[1], started=row[2]) for row in get_games()]
+    return [GameBasicInfo(name=row[0], player_count=row[1], started=row[2], has_password=row[3]) for row in get_games()]
 
 
 @games_router.put("/start", response_model=GameListPlayers)

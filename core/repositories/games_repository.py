@@ -15,7 +15,7 @@ from core.schemas.games_schema import BasicGameInput
 
 @db_session
 def get_games():
-    return select((g.name, len(g.players), g.started) for g in Game if not g.started)[:]
+    return select((g.name, len(g.players), g.started, len(g.password)>0 ) for g in Game if not g.started)[:]
 
 
 @db_session
@@ -25,7 +25,10 @@ def get_game_by_name(name):
 
 @db_session
 def new_game(game):
-    g = Game(name=game.game_name)
+    if game.password:
+        g = Game(name=game.game_name, password=game.password)
+    else:
+        g = Game(name=game.game_name)
     player = Player(nickname=game.nickname, game=g, host=True)
     return GamePlayer(game=game_to_game_output(g),
                       player=player_to_player_output(player))
@@ -62,6 +65,10 @@ def join_player_to_game(game_join):
 
     if g.started:
         raise MysteryException(message="Game has already been started", status_code=400)
+
+    if g.password:
+        if g.password != game_join.password:
+            raise MysteryException(message="password doesn't match, try again!", status_code=400)
 
     if len(g.players) == 6:
         raise MysteryException(message="Full game!", status_code=400)
