@@ -2,8 +2,8 @@ from pony.orm import db_session
 
 from core.repositories import find_player_by_id
 from core.repositories.games_repository import find_game_by_name
-from tests.common_endpoints import get_all_games, new_game, join_game, find_game_by_id_endpoint, start_game, \
-    new_game_by_name, string_generator, new_game_by_password, create_game_with_n_players, create_started_game
+from tests.util_functions import get_all_games, new_game, join_game, find_game_by_id_endpoint, new_game_by_name, \
+    string_generator, new_game_by_password, create_game_with_n_players, create_started_game
 
 
 def test_get_all_games_ok():

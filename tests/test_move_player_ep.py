@@ -3,7 +3,7 @@ import random
 from pony.orm import db_session
 
 from core.repositories import find_player_by_id
-from tests.common_endpoints import move_player, create_started_game_and_get_player_turn, \
+from tests.util_functions import move_player, create_started_game_and_get_player_turn, \
     roll_dice_and_get_possible_movements
 
 

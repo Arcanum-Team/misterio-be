@@ -1,4 +1,4 @@
-from tests.common_endpoints import get_board_endpoint
+from tests.util_functions import get_board_endpoint
 
 
 def test_get_board():

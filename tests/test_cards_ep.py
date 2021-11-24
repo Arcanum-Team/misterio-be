@@ -1,4 +1,4 @@
-from tests.common_endpoints import get_all_cards_endpoint, new_game, join_game, start_game, get_cards_by_player_id
+from tests.util_functions import get_all_cards_endpoint, new_game, join_game, start_game, get_cards_by_player_id
 
 
 def test_get_all_cards():
