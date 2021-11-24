@@ -77,6 +77,7 @@ def test_enter_enclosure_ok():
     assert not player_in_enclosure_json["player"]["current_position"]
     assert player_in_enclosure_json["player"]["enclosure"]
 
+
 def test_accuse_ok():
     game_response, player_turn = create_started_game_and_get_player_turn("one", ["two", "three", "four"])
     game_id = game_response["game"]["id"]
@@ -91,6 +92,7 @@ def test_accuse_ok():
     assert accuse_response_ok_json["game"]["id"] == game_id
     assert accuse_response_ok_json["cards"] in envelop
 
+
 def test_accuse_wrong():
     game_response, player_turn = create_started_game_and_get_player_turn("one", ["two", "three", "four"])
     game_id = game_response["game"]["id"]
@@ -99,7 +101,7 @@ def test_accuse_wrong():
     if envelop[0] == 1:
         envelop[0] = 2
     else:
-        envelop[0] = envelop[0]-1
+        envelop[0] = envelop[0] - 1
     accuse_cards = envelop
     accuse_response_wrong = accuse(game_id, player_turn["id"], accuse_cards[0], accuse_cards[1], accuse_cards[2])
     assert accuse_response_wrong.status_code == 200
@@ -110,13 +112,13 @@ def test_accuse_wrong():
     assert accuse_response_wrong_json["cards"] in accuse_cards
 
 
-def test_accuse_whit_unstarted_game():
+def test_accuse_whit_not_started_game():
     game_response = create_game_with_n_players("one", ["two", "three", "four"])
     game_id = game_response["game"]["id"]
     player_id = game_response["players"][0]["id"]
-    #carta con id 1 es el recinto, con id 15 el monstruo y con id 19 la victima
-    accuse_response_wrong = accuse(game_id, player_id, 1, 15, 19) 
+    accuse_response_wrong = accuse(game_id, player_id, 1, 15, 19)
     assert accuse_response_wrong.status_code == 400
+
 
 def test_accuse_default_winner():
     game_response, player_turn = create_started_game_and_get_player_turn("one", ["two"])
@@ -127,7 +129,7 @@ def test_accuse_default_winner():
     if envelop[0] == 1:
         accuse_cards[0] = 2
     else:
-        accuse_cards[0] = envelop[0]-1
+        accuse_cards[0] = envelop[0] - 1
     accuse_response_wrong = accuse(game_id, player_turn["id"], accuse_cards[0], accuse_cards[1], accuse_cards[2])
     assert accuse_response_wrong.status_code == 200
     player_win = next(filter(lambda p: p["order"] == 2, game_response["players"]), None)
