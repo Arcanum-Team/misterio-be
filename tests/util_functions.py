@@ -86,6 +86,12 @@ def move_player(game_id, player_id, box_id, dice_value):
                                  "dice_value": dice_value})
 
 
+def enclosure_enter(game_id, player_id):
+    return game_client.put("/api/v1/shifts/enclosure/enter",
+                           headers={'accept': 'application/json', 'Content-Type': 'application/json'},
+                           json={"game_id": game_id, "player_id": player_id})
+
+
 def create_started_game_and_get_player_turn(nickname_host, join_players):
     game_response = create_started_game(nickname_host, join_players)[0].json()
     player_turn = next(filter(lambda p: p["order"] == 1, game_response["players"]), None)  # Get Player on turn
@@ -117,3 +123,12 @@ def roll_dice_and_get_possible_movements(game_id, player_id, dice_value):
 
 def string_generator(size=6, chars=string.ascii_uppercase + string.digits):
     return ''.join(random.choice(chars) for _ in range(size))
+
+
+def get_enclosure_box_id(possible_movements):
+    board = get_board_endpoint().json()
+    all_boxes = list()
+    for r in board:
+        all_boxes.extend(r["boxes"])
+    enclosures_enter = list(filter(lambda b: b["attribute"] in ["ENCLOSURE_DOWN", "ENCLOSURE_UP"], all_boxes))
+    return set(map(lambda b: b["id"], enclosures_enter)).intersection(set(possible_movements)).pop()
