@@ -92,6 +92,13 @@ def enclosure_enter(game_id, player_id):
                            json={"game_id": game_id, "player_id": player_id})
 
 
+def accuse(game_id, player_id, enclosure_id, monster_id, victim_id):
+    return game_client.put("/api/v1/shifts/accuse",
+                           headers={'accept': 'application/json', 'Content-Type': 'application/json'},
+                           json={"game_id": game_id, "player_id": player_id, "enclosure_id":enclosure_id,
+                                "monster_id":monster_id, "victim_id":victim_id})
+
+
 def create_started_game_and_get_player_turn(nickname_host, join_players):
     game_response = create_started_game(nickname_host, join_players)[0].json()
     player_turn = next(filter(lambda p: p["order"] == 1, game_response["players"]), None)  # Get Player on turn
