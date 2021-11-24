@@ -1,3 +1,6 @@
+import random
+import string
+
 from fastapi.testclient import TestClient
 
 from main import app
@@ -30,6 +33,24 @@ def new_game(nickname):
                             headers={'accept': 'application/json', 'Content-Type': 'application/json'},
                             json={
                                 "nickname": nickname
+                            })
+
+
+def new_game_by_name(nickname, game_name):
+    return game_client.post("/api/v1/games/",
+                            headers={'accept': 'application/json', 'Content-Type': 'application/json'},
+                            json={
+                                "nickname": nickname,
+                                "game_name": game_name
+                            })
+
+
+def new_game_by_password(nickname, password):
+    return game_client.post("/api/v1/games/",
+                            headers={'accept': 'application/json', 'Content-Type': 'application/json'},
+                            json={
+                                "nickname": nickname,
+                                "optional_password": password
                             })
 
 
@@ -66,19 +87,25 @@ def move_player(game_id, player_id, box_id, dice_value):
 
 
 def create_started_game_and_get_player_turn(nickname_host, join_players):
-    new_game_response = create_game_with_n_players(join_players, nickname_host)
-    game_response = start_game(new_game_response["game"]["id"], new_game_response["player"]["id"]).json()
+    game_response = create_started_game(nickname_host, join_players)[0].json()
     player_turn = next(filter(lambda p: p["order"] == 1, game_response["players"]), None)  # Get Player on turn
     assert player_turn
 
     return game_response, player_turn
 
 
-def create_game_with_n_players(join_players, nickname_host):
+def create_started_game(nickname_host, join_players):
+    new_game_response = create_game_with_n_players(nickname_host, join_players)
+    player_host = next(filter(lambda p: p["nickname"] == nickname_host, new_game_response["players"]), None)
+    started_game = start_game(new_game_response["game"]["id"], player_host["id"])
+    return started_game, player_host
+
+
+def create_game_with_n_players(nickname_host, join_players):
     new_game_response = new_game(nickname_host).json()
     for nickname in join_players:
-        join_game(new_game_response["game"]["name"], nickname).json()
-    return new_game_response
+        join_game(new_game_response["game"]["name"], nickname)
+    return find_game_by_id_endpoint(new_game_response["game"]["id"]).json()
 
 
 def roll_dice_and_get_possible_movements(game_id, player_id, dice_value):
@@ -86,3 +113,7 @@ def roll_dice_and_get_possible_movements(game_id, player_id, dice_value):
     assert possible_movements_response
     assert possible_movements_response.status_code == 200
     return possible_movements_response
+
+
+def string_generator(size=6, chars=string.ascii_uppercase + string.digits):
+    return ''.join(random.choice(chars) for _ in range(size))
