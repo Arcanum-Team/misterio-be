@@ -1,14 +1,10 @@
 import random
-from re import I
-import re
-
 from pony.orm import db_session
-
-from core import logger
 from core.services import get_envelop
 from core.repositories import find_player_by_id
 from tests.util_functions import create_game_with_n_players, move_player, create_started_game_and_get_player_turn, \
-    roll_dice_and_get_possible_movements, get_enclosure_box_id, enclosure_enter, accuse
+    roll_dice_and_get_possible_movements, get_enclosure_box_id, enclosure_enter, accuse, \
+    get_enclosure_by_game_id_and_player_id, enclosure_exit
 
 
 def get_wrong_box(possible_movements_json):
@@ -76,6 +72,63 @@ def test_enter_enclosure_ok():
     assert player_in_enclosure_json["player"]["id"] == player_turn["id"]
     assert not player_in_enclosure_json["player"]["current_position"]
     assert player_in_enclosure_json["player"]["enclosure"]
+
+
+def test_enter_enclosure_wrong_box_fail():
+    game_response, player_turn = create_started_game_and_get_player_turn("one", ["two", "three", "four"])
+
+    dice = 1
+    possible_movements = set(roll_dice_and_get_possible_movements(game_response["game"]["id"], player_turn["id"],
+                                                                  dice).json())
+
+    move_player(game_response["game"]["id"], player_turn["id"], possible_movements.pop(), dice)
+
+    player_in_enclosure_response = enclosure_enter(game_response["game"]["id"], player_turn["id"])
+
+    assert player_in_enclosure_response.status_code == 400
+
+
+def test_exit_enclosure_ok():
+    game_response, player_turn = create_started_game_and_get_player_turn("one", ["two", "three", "four"])
+    dice = 6
+    enclosure_box_id = get_enclosure_by_game_id_and_player_id(game_response["game"]["id"], player_turn["id"], dice)
+
+    move_player(game_response["game"]["id"], player_turn["id"], enclosure_box_id, dice)
+
+    player_in_enclosure = enclosure_enter(game_response["game"]["id"], player_turn["id"]).json()
+    exit_door = player_in_enclosure["player"]["enclosure"]["doors"][0]["id"]
+
+    player_out_enclosure_response = enclosure_exit(game_response["game"]["id"], player_turn["id"], exit_door)
+
+    assert player_out_enclosure_response.status_code == 200
+    player_out_enclosure_json = player_out_enclosure_response.json()
+    assert player_out_enclosure_json["game"]
+    assert player_out_enclosure_json["game"]["id"] == game_response["game"]["id"]
+    assert player_out_enclosure_json["player"]["id"] == player_turn["id"]
+    assert player_out_enclosure_json["player"]["current_position"]
+    assert not player_out_enclosure_json["player"]["enclosure"]
+
+    with db_session:
+        player = find_player_by_id(player_turn["id"])
+        assert player
+        assert player.game
+        assert player.current_position
+        assert player.current_position.id == player_out_enclosure_json["player"]["current_position"]["id"]
+        assert not player.enclosure
+
+
+def test_exit_enclosure_wrong_box_fail():
+    game_response, player_turn = create_started_game_and_get_player_turn("one", ["two", "three", "four"])
+    dice = 6
+    enclosure_box_id = get_enclosure_by_game_id_and_player_id(game_response["game"]["id"], player_turn["id"], dice)
+
+    move_player(game_response["game"]["id"], player_turn["id"], enclosure_box_id, dice)
+
+    enclosure_enter(game_response["game"]["id"], player_turn["id"]).json()
+
+    player_out_enclosure_response = enclosure_exit(game_response["game"]["id"], player_turn["id"], 1)
+
+    assert player_out_enclosure_response.status_code == 400
 
 
 def test_accuse_ok():

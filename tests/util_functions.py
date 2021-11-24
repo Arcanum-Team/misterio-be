@@ -92,11 +92,17 @@ def enclosure_enter(game_id, player_id):
                            json={"game_id": game_id, "player_id": player_id})
 
 
+def enclosure_exit(game_id, player_id, exit_door):
+    return game_client.put("/api/v1/shifts/enclosure/exit",
+                           headers={'accept': 'application/json', 'Content-Type': 'application/json'},
+                           json={"game_id": game_id, "player_id": player_id, "box_id": exit_door})
+
+
 def accuse(game_id, player_id, enclosure_id, monster_id, victim_id):
     return game_client.put("/api/v1/shifts/accuse",
                            headers={'accept': 'application/json', 'Content-Type': 'application/json'},
-                           json={"game_id": game_id, "player_id": player_id, "enclosure_id":enclosure_id,
-                                "monster_id":monster_id, "victim_id":victim_id})
+                           json={"game_id": game_id, "player_id": player_id, "enclosure_id": enclosure_id,
+                                 "monster_id": monster_id, "victim_id": victim_id})
 
 
 def create_started_game_and_get_player_turn(nickname_host, join_players):
@@ -139,3 +145,9 @@ def get_enclosure_box_id(possible_movements):
         all_boxes.extend(r["boxes"])
     enclosures_enter = list(filter(lambda b: b["attribute"] in ["ENCLOSURE_DOWN", "ENCLOSURE_UP"], all_boxes))
     return set(map(lambda b: b["id"], enclosures_enter)).intersection(set(possible_movements)).pop()
+
+
+def get_enclosure_by_game_id_and_player_id(game_id, player_id, dice):
+    possible_movements = roll_dice_and_get_possible_movements(game_id, player_id, dice).json()
+    enclosure_box_id = get_enclosure_box_id(possible_movements)
+    return enclosure_box_id
