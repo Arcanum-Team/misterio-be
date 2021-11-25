@@ -119,6 +119,12 @@ def suspect_response_card(game_id, from_player, to_player, card):
                                 "card": card})
 
 
+def pass_turn(game_id, player_id):
+    return game_client.put("/api/v1/shifts/pass",
+                        headers={'accept': 'application/json', 'Content-Type': 'application/json'},
+                        json={"game_id": game_id, "player_id": player_id})
+
+
 def create_started_game_and_get_player_turn(nickname_host, join_players):
     game_response = create_started_game(nickname_host, join_players)[0].json()
     player_turn = next(filter(lambda p: p["order"] == 1, game_response["players"]), None)  # Get Player on turn
@@ -165,3 +171,8 @@ def get_enclosure_by_game_id_and_player_id(game_id, player_id, dice):
     possible_movements = roll_dice_and_get_possible_movements(game_id, player_id, dice).json()
     enclosure_box_id = get_enclosure_box_id(possible_movements)
     return enclosure_box_id
+
+def put_execute_witch(game_id, player_id):
+    return game_client.put("/api/v1/shifts/execute_witch",
+                           headers={'accept': 'application/json', 'Content-Type': 'application/json'},
+                           json={"game_id": game_id, "player_id": player_id})

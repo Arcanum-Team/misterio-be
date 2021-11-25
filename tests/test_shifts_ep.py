@@ -4,7 +4,8 @@ from core.services import get_envelop
 from core.repositories import find_player_by_id
 from tests.util_functions import create_game_with_n_players, move_player, create_started_game_and_get_player_turn, \
     roll_dice_and_get_possible_movements, get_enclosure_box_id, enclosure_enter, accuse, \
-    get_enclosure_by_game_id_and_player_id, enclosure_exit, suspect, suspect_response_card
+    get_enclosure_by_game_id_and_player_id, enclosure_exit, new_game, join_game, start_game, put_execute_witch, suspect, suspect_response_card, \
+    pass_turn
 
 
 def get_wrong_box(possible_movements_json):
@@ -194,6 +195,24 @@ def test_accuse_default_winner():
     assert accuse_response_wrong_json["cards"] in envelop
 
 
+def test_execute_witch_ok():
+    game= new_game("nickname").json()
+    join_p= join_game(game["game"]["name"],"mickname2").json()
+    game_started=start_game(game["game"]["id"],game["player"]["id"]).json()
+    player1= find_player_by_id(game["player"]["id"])
+    player2= find_player_by_id(join_p["player"]["id"])
+    if player1.witch:
+         exec_witch= put_execute_witch(game["game"]["id"],game["player"]["id"])
+    else:
+        exec_witch= put_execute_witch(join_p["game"]["id"], join_p["player"]["id"])
+    player1= find_player_by_id(game["player"]["id"])
+    player2= find_player_by_id(join_p["player"]["id"])
+    assert not player1.witch
+    assert not player2.witch
+    assert exec_witch.json()
+    assert exec_witch.status_code == 200
+
+
 def test_suspect_ok():
     game_response, player_turn = create_started_game_and_get_player_turn("one", ["two", "three", "four"])
 
@@ -220,4 +239,17 @@ def test_suspect_ok():
     assert suspect_response.status_code == 200
 
 
-    
+def test_pass_turn_ok():
+    game_response, player_turn = create_started_game_and_get_player_turn("one", ["two", "three", "four"])
+    pass_turn_response = pass_turn(game_response["game"]["id"], player_turn["id"])
+
+    assert pass_turn_response.status_code == 204
+
+def test_pass_turn_wrong():
+    game_response, player_turn = create_started_game_and_get_player_turn("one", ["two", "three", "four"])
+    for player in game_response["players"]:
+        if(player["id"] != player_turn["id"]):
+            wrong_player_pass_turn = player["id"]
+    pass_turn_response = pass_turn(game_response["game"]["id"], wrong_player_pass_turn)
+
+    assert pass_turn_response.status_code == 400
