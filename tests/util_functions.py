@@ -165,3 +165,8 @@ def get_enclosure_by_game_id_and_player_id(game_id, player_id, dice):
     possible_movements = roll_dice_and_get_possible_movements(game_id, player_id, dice).json()
     enclosure_box_id = get_enclosure_box_id(possible_movements)
     return enclosure_box_id
+
+def put_execute_witch(game_id, player_id):
+    return game_client.put("/api/v1/shifts/execute_witch",
+                           headers={'accept': 'application/json', 'Content-Type': 'application/json'},
+                           json={"game_id": game_id, "player_id": player_id})
