@@ -13,6 +13,7 @@ class Settings(BaseSettings):
     API_V1_STR: str = "/api/v1"
 
     DB_PROVIDER: str = "sqlite"
+    DB_NAME: str = "mystery-dev.sqlite"
     SQLALCHEMY_DATABASE_URI: Optional[str] = "sqlite:///example.db"
 
     class Config:

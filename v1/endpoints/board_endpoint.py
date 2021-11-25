@@ -8,8 +8,3 @@ board_router = APIRouter()
 @board_router.get("/")
 def get_board():
     return get_complete_board()
-
-
-@board_router.get("/box/adj/{id}/{dice}")
-def get_adjacent_boxes(id: int, dice: int):
-    return get_possible_movement(dice, id)

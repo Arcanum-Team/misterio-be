@@ -16,7 +16,8 @@ from core import GamesEventMiddleware
 
 app = FastAPI()
 
-db.bind(settings.DB_PROVIDER, 'example.sqlite', create_db=True)  # Conectamos el objeto `db` con la base de datos.
+
+db.bind(settings.DB_PROVIDER, settings.DB_NAME, create_db=True)  # Conectamos el objeto `db` con la base de datos.
 db.generate_mapping(create_tables=True)  # Generamos las base de datos.
 set_sql_debug(False)
 
