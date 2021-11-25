@@ -3,6 +3,7 @@ import string
 
 from fastapi.testclient import TestClient
 
+from core import logger
 from main import app
 
 game_client = TestClient(app)
@@ -108,21 +109,22 @@ def accuse(game_id, player_id, enclosure_id, monster_id, victim_id):
 def suspect(game_id, player_id, monster_id, victim_id):
     return game_client.put("/api/v1/shifts/suspect",
                            headers={'accept': 'application/json', 'Content-Type': 'application/json'},
-                           json={"game_id": game_id, "player_id": player_id,"monster_id": monster_id,
-                                "victim_id": victim_id})
+                           json={"game_id": game_id, "player_id": player_id, "monster_id": monster_id,
+                                 "victim_id": victim_id})
 
 
 def suspect_response_card(game_id, from_player, to_player, card):
-    return game_client.put("/api/v1/shifts/response_suspect_card",
+    logger.info(f"{game_id} {from_player} {to_player} {card}")
+    return game_client.put("/api/v1/shifts/send_suspect_card",
                            headers={'accept': 'application/json', 'Content-Type': 'application/json'},
-                           json={"game_id": game_id, "from_player": from_player,"to_player": to_player,
-                                "card": card})
+                           json={"game_id": game_id, "from_player": from_player, "to_player": to_player,
+                                 "card": card})
 
 
 def pass_turn(game_id, player_id):
     return game_client.put("/api/v1/shifts/pass",
-                        headers={'accept': 'application/json', 'Content-Type': 'application/json'},
-                        json={"game_id": game_id, "player_id": player_id})
+                           headers={'accept': 'application/json', 'Content-Type': 'application/json'},
+                           json={"game_id": game_id, "player_id": player_id})
 
 
 def create_started_game_and_get_player_turn(nickname_host, join_players):
@@ -171,6 +173,7 @@ def get_enclosure_by_game_id_and_player_id(game_id, player_id, dice):
     possible_movements = roll_dice_and_get_possible_movements(game_id, player_id, dice).json()
     enclosure_box_id = get_enclosure_box_id(possible_movements)
     return enclosure_box_id
+
 
 def put_execute_witch(game_id, player_id):
     return game_client.put("/api/v1/shifts/execute_witch",

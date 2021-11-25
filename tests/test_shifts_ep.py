@@ -1,10 +1,14 @@
 import random
 from pony.orm import db_session
+
+from core import logger
+from core.repositories.games_repository import get_player_reached
 from core.services import get_envelop
 from core.repositories import find_player_by_id
 from tests.util_functions import create_game_with_n_players, move_player, create_started_game_and_get_player_turn, \
     roll_dice_and_get_possible_movements, get_enclosure_box_id, enclosure_enter, accuse, \
-    get_enclosure_by_game_id_and_player_id, enclosure_exit, new_game, join_game, start_game, put_execute_witch, suspect, suspect_response_card, \
+    get_enclosure_by_game_id_and_player_id, enclosure_exit, new_game, join_game, start_game, put_execute_witch, suspect, \
+    suspect_response_card, \
     pass_turn
 
 
@@ -196,17 +200,17 @@ def test_accuse_default_winner():
 
 
 def test_execute_witch_ok():
-    game= new_game("nickname").json()
-    join_p= join_game(game["game"]["name"],"mickname2").json()
-    game_started=start_game(game["game"]["id"],game["player"]["id"]).json()
-    player1= find_player_by_id(game["player"]["id"])
-    player2= find_player_by_id(join_p["player"]["id"])
+    game = new_game("nickname").json()
+    join_p = join_game(game["game"]["name"], "mickname2").json()
+    game_started = start_game(game["game"]["id"], game["player"]["id"]).json()
+    player1 = find_player_by_id(game["player"]["id"])
+    player2 = find_player_by_id(join_p["player"]["id"])
     if player1.witch:
-         exec_witch= put_execute_witch(game["game"]["id"],game["player"]["id"])
+        exec_witch = put_execute_witch(game["game"]["id"], game["player"]["id"])
     else:
-        exec_witch= put_execute_witch(join_p["game"]["id"], join_p["player"]["id"])
-    player1= find_player_by_id(game["player"]["id"])
-    player2= find_player_by_id(join_p["player"]["id"])
+        exec_witch = put_execute_witch(join_p["game"]["id"], join_p["player"]["id"])
+    player1 = find_player_by_id(game["player"]["id"])
+    player2 = find_player_by_id(join_p["player"]["id"])
     assert not player1.witch
     assert not player2.witch
     assert exec_witch.json()
@@ -234,7 +238,7 @@ def test_suspect_ok():
         suspect_cards[0] = 2
     else:
         suspect_cards[0] = envelop[0] - 1
-    suspect_response = suspect(game_id, player_turn["id"],suspect_cards[1], suspect_cards[2])
+    suspect_response = suspect(game_id, player_turn["id"], suspect_cards[1], suspect_cards[2])
 
     assert suspect_response.status_code == 200
 
@@ -245,11 +249,37 @@ def test_pass_turn_ok():
 
     assert pass_turn_response.status_code == 204
 
+
 def test_pass_turn_wrong():
     game_response, player_turn = create_started_game_and_get_player_turn("one", ["two", "three", "four"])
     for player in game_response["players"]:
-        if(player["id"] != player_turn["id"]):
+        if (player["id"] != player_turn["id"]):
             wrong_player_pass_turn = player["id"]
     pass_turn_response = pass_turn(game_response["game"]["id"], wrong_player_pass_turn)
 
     assert pass_turn_response.status_code == 400
+
+
+def test_suspect_response_ok():
+    game_response, player_turn = create_started_game_and_get_player_turn("one", ["two", "three", "four"])
+
+    dice = 6
+    possible_movements = roll_dice_and_get_possible_movements(game_response["game"]["id"], player_turn["id"],
+                                                              dice).json()
+
+    enclosure_box_id = get_enclosure_box_id(possible_movements)
+
+    move_player(game_response["game"]["id"], player_turn["id"], enclosure_box_id, dice)
+
+    enclosure_enter(game_response["game"]["id"], player_turn["id"])
+    game_id = game_response["game"]["id"]
+
+    with db_session:
+        player_in_db = find_player_by_id(player_turn["id"])
+        player_reached = next(filter(lambda p: str(p.id) != player_turn["id"], player_in_db.game.players))
+        response_suspect_card = set(player_reached.cards).pop().id
+
+    to_player = player_turn["id"]
+    from_player = str(player_reached.id)
+    response_response_suspect_card = suspect_response_card(game_id, from_player, to_player, response_suspect_card)
+    assert response_response_suspect_card.status_code == 200
