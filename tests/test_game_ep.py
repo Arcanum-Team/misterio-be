@@ -125,3 +125,4 @@ def test_start_game_ok():
 def test_start_game_with_one_player_fail():
     started_game, player_host = create_started_game("one", [])
     assert started_game.status_code == 400
+

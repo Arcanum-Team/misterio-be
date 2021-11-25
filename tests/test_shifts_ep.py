@@ -4,7 +4,7 @@ from core.services import get_envelop
 from core.repositories import find_player_by_id
 from tests.util_functions import create_game_with_n_players, move_player, create_started_game_and_get_player_turn, \
     roll_dice_and_get_possible_movements, get_enclosure_box_id, enclosure_enter, accuse, \
-    get_enclosure_by_game_id_and_player_id, enclosure_exit
+    get_enclosure_by_game_id_and_player_id, enclosure_exit, new_game, join_game, start_game, put_execute_witch
 
 
 def get_wrong_box(possible_movements_json):
@@ -192,3 +192,17 @@ def test_accuse_default_winner():
     assert accuse_response_wrong_json["player_win"]["id"] == player_win["id"]
     assert accuse_response_wrong_json["game"]["id"] == game_id
     assert accuse_response_wrong_json["cards"] in envelop
+
+
+def test_execute_witch_ok():
+    game= new_game("nickname").json()
+    join= join_game(game["game"]["name"],"mickname2").json()
+    game_started=start_game(game["game"]["id"],game["player"]["id"]).json()
+    if game["player"]["witch"]:
+         exec_witch= put_execute_witch(game["game"]["id"],game["player"]["id"])
+    else:
+        exec_witch= put_execute_witch(join["game"]["id"], join["player"]["id"])
+    assert not game["player"]["witch"]
+    assert not join["player"]["witch"]
+    assert exec_witch.json()
+    assert exec_witch.status_code == 200
