@@ -4,7 +4,7 @@ from core.services import get_envelop
 from core.repositories import find_player_by_id
 from tests.util_functions import create_game_with_n_players, move_player, create_started_game_and_get_player_turn, \
     roll_dice_and_get_possible_movements, get_enclosure_box_id, enclosure_enter, accuse, \
-    get_enclosure_by_game_id_and_player_id, enclosure_exit
+    get_enclosure_by_game_id_and_player_id, enclosure_exit, suspect, suspect_response_card
 
 
 def get_wrong_box(possible_movements_json):
@@ -192,3 +192,32 @@ def test_accuse_default_winner():
     assert accuse_response_wrong_json["player_win"]["id"] == player_win["id"]
     assert accuse_response_wrong_json["game"]["id"] == game_id
     assert accuse_response_wrong_json["cards"] in envelop
+
+
+def test_suspect_ok():
+    game_response, player_turn = create_started_game_and_get_player_turn("one", ["two", "three", "four"])
+
+    dice = 6
+    possible_movements = roll_dice_and_get_possible_movements(game_response["game"]["id"], player_turn["id"],
+                                                              dice).json()
+
+    enclosure_box_id = get_enclosure_box_id(possible_movements)
+
+    move_player(game_response["game"]["id"], player_turn["id"], enclosure_box_id, dice)
+
+    enclosure_enter(game_response["game"]["id"], player_turn["id"])
+    game_id = game_response["game"]["id"]
+
+    with db_session:
+        envelop = get_envelop(game_id)
+    suspect_cards = envelop
+    if envelop[0] == 1:
+        suspect_cards[0] = 2
+    else:
+        suspect_cards[0] = envelop[0] - 1
+    suspect_response = suspect(game_id, player_turn["id"],suspect_cards[1], suspect_cards[2])
+
+    assert suspect_response.status_code == 200
+
+
+    
