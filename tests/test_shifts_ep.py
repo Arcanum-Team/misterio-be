@@ -4,7 +4,7 @@ from core.services import get_envelop
 from core.repositories import find_player_by_id
 from tests.util_functions import create_game_with_n_players, move_player, create_started_game_and_get_player_turn, \
     roll_dice_and_get_possible_movements, get_enclosure_box_id, enclosure_enter, accuse, \
-    get_enclosure_by_game_id_and_player_id, enclosure_exit, new_game, join_game, start_game, put_execute_witch
+    get_enclosure_by_game_id_and_player_id, enclosure_exit, new_game, join_game, start_game, put_execute_witch, suspect, suspect_response_card
 
 
 def get_wrong_box(possible_movements_json):
@@ -196,13 +196,46 @@ def test_accuse_default_winner():
 
 def test_execute_witch_ok():
     game= new_game("nickname").json()
-    join= join_game(game["game"]["name"],"mickname2").json()
+    join_p= join_game(game["game"]["name"],"mickname2").json()
     game_started=start_game(game["game"]["id"],game["player"]["id"]).json()
-    if game["player"]["witch"]:
+    player1= find_player_by_id(game["player"]["id"])
+    player2= find_player_by_id(join_p["player"]["id"])
+    if player1.witch:
          exec_witch= put_execute_witch(game["game"]["id"],game["player"]["id"])
     else:
-        exec_witch= put_execute_witch(join["game"]["id"], join["player"]["id"])
-    assert not game["player"]["witch"]
-    assert not join["player"]["witch"]
+        exec_witch= put_execute_witch(join_p["game"]["id"], join_p["player"]["id"])
+    player1= find_player_by_id(game["player"]["id"])
+    player2= find_player_by_id(join_p["player"]["id"])
+    assert not player1.witch
+    assert not player2.witch
     assert exec_witch.json()
     assert exec_witch.status_code == 200
+
+
+def test_suspect_ok():
+    game_response, player_turn = create_started_game_and_get_player_turn("one", ["two", "three", "four"])
+
+    dice = 6
+    possible_movements = roll_dice_and_get_possible_movements(game_response["game"]["id"], player_turn["id"],
+                                                              dice).json()
+
+    enclosure_box_id = get_enclosure_box_id(possible_movements)
+
+    move_player(game_response["game"]["id"], player_turn["id"], enclosure_box_id, dice)
+
+    enclosure_enter(game_response["game"]["id"], player_turn["id"])
+    game_id = game_response["game"]["id"]
+
+    with db_session:
+        envelop = get_envelop(game_id)
+    suspect_cards = envelop
+    if envelop[0] == 1:
+        suspect_cards[0] = 2
+    else:
+        suspect_cards[0] = envelop[0] - 1
+    suspect_response = suspect(game_id, player_turn["id"],suspect_cards[1], suspect_cards[2])
+
+    assert suspect_response.status_code == 200
+
+
+    

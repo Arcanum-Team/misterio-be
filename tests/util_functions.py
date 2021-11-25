@@ -105,6 +105,20 @@ def accuse(game_id, player_id, enclosure_id, monster_id, victim_id):
                                  "monster_id": monster_id, "victim_id": victim_id})
 
 
+def suspect(game_id, player_id, monster_id, victim_id):
+    return game_client.put("/api/v1/shifts/suspect",
+                           headers={'accept': 'application/json', 'Content-Type': 'application/json'},
+                           json={"game_id": game_id, "player_id": player_id,"monster_id": monster_id,
+                                "victim_id": victim_id})
+
+
+def suspect_response_card(game_id, from_player, to_player, card):
+    return game_client.put("/api/v1/shifts/response_suspect_card",
+                           headers={'accept': 'application/json', 'Content-Type': 'application/json'},
+                           json={"game_id": game_id, "from_player": from_player,"to_player": to_player,
+                                "card": card})
+
+
 def create_started_game_and_get_player_turn(nickname_host, join_players):
     game_response = create_started_game(nickname_host, join_players)[0].json()
     player_turn = next(filter(lambda p: p["order"] == 1, game_response["players"]), None)  # Get Player on turn
